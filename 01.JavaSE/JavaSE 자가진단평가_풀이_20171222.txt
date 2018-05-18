@@ -1,0 +1,285 @@
+---------------------------------
+문제1) 아래 화면 설계를 토대로 프로그램을 구현합니다. Dept.java, Member.java, MemberDAO.java, MemberService.java, Main.java
+
+- 자료 저장소로 컬렉션 이용
+- 회원 정보 입력, 회원 정보 출력 액션 구현
+- 화면 설계를 토대로 항목 결정->  회원번호, 이름, 전화번호, 이메일, 등록일(yyyy-MM-dd), 부서 ->자료형 클래스
+- 부서 정보는 개발부(B01), 마케팅부(B02), 총무부(B03)만 존재한다고 가정.
+- 회원 정보 입력시 회원번호는 자동 증가 및 관리되도록 한다. 회원번호 형식은 'M001' 형식을 가진다.
+
+
+- 화면 설계
+-----------------------------
+1.회원정보입력 2.회원정보출력
+-----------------------------
+선택(1~2, 0 quit)?1
+--------------
+회원정보입력
+--------------
+이름: hong
+전화번호: 010-1234-1234
+이메일: hong@test.com
+등록일(yyyy-MM-dd): 2017-12-18
+{B01=개발부, B02=마케팅부, B03=총무부}
+부서번호: B01
+회원 정보 입력이 성공했습니다
+
+-----------------------------
+1.회원정보입력 2.회원정보출력
+-----------------------------
+선택(1~2, 0 quit)?1
+--------------
+회원정보입력
+--------------
+이름: park
+전화번호: 010-5678-5678
+이메일: park@naver.com
+등록일(yyyy-MM-dd): 2017-12-19
+{B01=개발부, B02=마케팅부, B03=총무부}
+부서번호: B02
+회원 정보 입력이 성공했습니다
+
+-----------------------------
+1.회원정보입력 2.회원정보출력
+-----------------------------
+선택(1~2, 0 quit)?2
+------------
+회원정보출력
+------------
+총: 2건
+-----------------------------------------------------
+M001  hong       010-1234-1234   hong@test.com        2017-12-18   개발부
+M002  park       010-5678-5678   park@naver.com       2017-12-19   마케팅부
+
+-----------------------------
+1.회원정보입력 2.회원정보출력
+-----------------------------
+선택(1~2, 0 quit)?0
+프로그램 종료
+
+
+
+
+---------------------------------
+//Dept.java
+package com.test;
+
+import java.util.*;
+
+public class Dept {
+	
+	private static Map<String, String> map = new HashMap<String,String>();
+	
+	static {
+		map.put("B01", "개발부");
+		map.put("B02", "마케팅부");
+		map.put("B03", "총무부");
+	}
+	
+	public static String getValue(String key) {
+		return map.get(key);
+	}
+
+	//"{B01=개발부, B02=마케팅부, B03=총무부}"
+	public static String getList() {
+		return map.toString();
+	}
+	
+}
+
+
+
+//Member.java
+package com.test;
+
+public class Member {
+
+	private String mid, name, phone, email, regDate, deptId;
+
+	public Member() {
+	}
+
+	public Member(String mid, String name, String phone, String email, String regDate, String deptId) {
+		this.mid = mid;
+		this.name = name;
+		this.phone = phone;
+		this.email = email;
+		this.regDate = regDate;
+		this.deptId = deptId;
+	}
+
+	public String getMid() {
+		return mid;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public String getRegDate() {
+		return regDate;
+	}
+
+	public String getDeptId() {
+		return deptId;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%-5s %-10s %-15s %-20s %-12s %s", this.mid, this.name, this.phone, this.email, this.regDate, Dept.getValue(this.deptId));
+	}
+	
+}
+
+
+
+
+
+
+
+//MemberDAO.java
+package com.test;
+
+import java.util.*;
+
+public class MemberDAO {
+
+	//컬렉션 저장소 준비
+	private List<Member> list = new ArrayList<Member>();
+
+
+	// 회원 정보 입력 메소드
+	public void memberAdd(String name, String phone, String email, String regDate, String deptId) {
+
+		Member max = null;
+		String mid = "M001";
+		if (this.list.size() > 0) {
+			max = this.list.get(this.list.size()-1);
+			mid = String.format("M%03d", Integer.parseInt(max.getMid().substring(1)) + 1);
+		}
+		
+		Member m = new Member(mid, name, phone, email, regDate, deptId);
+		this.list.add(m);
+
+
+	}
+
+	// 회원 정보 출력 메소드
+	public String memberList() {
+
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append(String.format("총: %d건%n", this.list.size()));
+		sb.append(String.format("-----------------------------------------------------%n"));
+		for (Member temp : this.list) {
+			sb.append(String.format("%s%n", temp));
+		}
+		return sb.toString();
+
+	}
+	
+}
+
+
+
+
+//MemberService.java
+package com.test;
+
+import java.util.*;
+
+public class MemberService {
+
+	//MemberDAO 객체 준비
+	private MemberDAO dao = new MemberDAO();
+
+
+	// 회원 정보 입력 메소드
+	public void memberAdd(Scanner sc) {
+
+		System.out.println("--------------");
+		System.out.println("회원정보입력");
+		System.out.println("--------------");
+
+		System.out.print("이름: ");
+		String name = sc.nextLine();
+		System.out.print("전화번호: ");
+		String phone = sc.nextLine();
+		System.out.print("이메일: ");
+		String email = sc.nextLine();
+		System.out.print("등록일(yyyy-MM-dd): ");
+		String regDate = sc.nextLine();
+		System.out.println(Dept.getList());
+		System.out.print("부서번호: ");
+		String deptId = sc.nextLine();
+
+		this.dao.memberAdd(name, phone, email, regDate, deptId);
+		System.out.println("회원 정보 입력이 성공했습니다");
+
+	}
+
+	// 회원 정보 출력 메소드
+	public void memberList() {
+
+		System.out.println("--------------");
+		System.out.println("회원정보출력");
+		System.out.println("--------------");
+		System.out.println(this.dao.memberList());
+
+	}
+
+}
+
+
+
+
+
+//Main.java
+package com.test;
+
+import java.util.*;
+
+public class Main {
+
+	public static void main(String[] args) {
+
+		Scanner sc = new Scanner(System.in);
+		MemberService service = new MemberService();
+
+		boolean run = true;
+		while (run) {
+			System.out.println("-----------------------------");
+			System.out.println("1.회원정보입력 2.회원정보출력");
+			System.out.println("-----------------------------");
+			System.out.print("선택(1~2, 0 quit)?");
+
+			int answer = sc.nextInt();
+			sc.nextLine();
+
+			switch (answer) {
+			case 0:	run = false; break;
+			case 1:	service.memberAdd(sc); break;
+			case 2:	service.memberList(); break;
+			}
+
+		}
+
+		sc.close();
+		System.out.println("프로그램 종료");
+
+	}
+
+}
+
+
+
+------------------------------------
+

@@ -1,0 +1,573 @@
+--------------------------------
+회원관리 v1.9 (콘솔 버전)
+
+- 자료 저장소로 컬렉션 이용
+- 회원 정보 입력, 회원 정보 출력, 회원 정보 검색, 회원 정보 삭제 액션 구현
+- 화면 설계를 토대로 항목 결정->  회원번호, 이름, 전화번호, 이메일, 등록일(yyyy-MM-dd), 부서 ->자료형 클래스
+- 부서 정보는 개발부(B01), 마케팅부(B02), 총무부(B03)만 존재한다고 가정.
+- 회원 정보 입력시 회원번호는 자동 증가 및 관리되도록 한다. 회원번호 형식은 'M001' 형식을 가진다.
+- 검색시 부분 검색이 가능하도록 한다. 회원번호 기준, 이름 기준, 전화번호 기준, 이메일 기준, 등록일 기준, 부서번호 기준으로 검색 가능.
+- 출력시 정렬 출력하도록 한다. 회원번호 기준, 이름 기준, 전화번호 기준, 이메일 기준, 등록일 기준, 부서이름 기준으로 오름차순 정렬 출력 가능.
+- 회원 정보 삭제 기능 구현 추가. 삭제 진행시 중복되지 않은 값을 가지는 고유한 키(회원번호)가 존재해야 한다.
+
+
+
+- 화면 설계
+-----------------------------------------------------
+1.회원정보입력 2.회원정보(정렬)출력 3.회원정보검색 4.회원정보삭제
+-----------------------------------------------------
+선택(1~4, 0 quit)?1
+--------------
+회원정보입력
+--------------
+이름: hong
+전화번호: 010-1234-1234
+이메일: hong@test.com
+등록일(yyyy-MM-dd): 2017-12-18
+{B01=개발부, B02=마케팅부, B03=총무부}
+부서번호: B01
+회원 정보 입력이 성공했습니다
+-----------------------------------------------------
+1.회원정보입력 2.회원정보(정렬)출력 3.회원정보검색 4.회원정보삭제
+-----------------------------------------------------
+선택(1~4, 0 quit)?1
+--------------
+회원정보입력
+--------------
+이름: park
+전화번호: 010-5678-5678
+이메일: park@naver.com
+등록일(yyyy-MM-dd): 2017-12-19
+{B01=개발부, B02=마케팅부, B03=총무부}
+부서번호: B02
+회원 정보 입력이 성공했습니다
+-----------------------------------------------------
+1.회원정보입력 2.회원정보(정렬)출력 3.회원정보검색 4.회원정보삭제
+-----------------------------------------------------
+선택(1~4, 0 quit)?2
+----------------------------------------------------------------------------
+3. 회원정보(정렬)출력>
+1. 회원번호기준  2. 이름기준  3. 전화번호기준  4. 이메일기준  5. 등록일기준  6. 부서번호기준
+----------------------------------------------------------------------------
+선택(1~6, 0 quit)?1
+--------------------
+회원정보출력(회원번호)
+--------------------
+총: 2건
+-----------------------------------------------------
+M001  hong       010-1234-1234   hong@test.com        2017-12-18   개발부
+M002  park       010-5678-5678   park@naver.com       2017-12-19   마케팅부
+
+----------------------------------------------------------------------------
+3. 회원정보(정렬)출력>
+1. 회원번호기준  2. 이름기준  3. 전화번호기준  4. 이메일기준  5. 등록일기준  6. 부서번호기준
+----------------------------------------------------------------------------
+선택(1~6, 0 quit)?0
+-----------------------------------------------------
+1.회원정보입력 2.회원정보(정렬)출력 3.회원정보검색 4.회원정보삭제
+-----------------------------------------------------
+선택(1~4, 0 quit)?3
+----------------------------------------------------------------------------
+3. 회원정보검색>
+1. 회원번호기준  2. 이름기준  3. 전화번호기준  4. 이메일기준  5. 등록일기준  6. 부서번호기준
+----------------------------------------------------------------------------
+선택(1~6, 0 quit)?1
+--------------------
+회원정보검색(회원번호)
+--------------------
+회원번호: M001
+M001  hong       010-1234-1234   hong@test.com        2017-12-18   개발부
+1개의 결과가 있습니다.
+---------------------
+
+----------------------------------------------------------------------------
+3. 회원정보검색>
+1. 회원번호기준  2. 이름기준  3. 전화번호기준  4. 이메일기준  5. 등록일기준  6. 부서번호기준
+----------------------------------------------------------------------------
+선택(1~6, 0 quit)?0
+-----------------------------------------------------
+1.회원정보입력 2.회원정보(정렬)출력 3.회원정보검색 4.회원정보삭제
+-----------------------------------------------------
+선택(1~4, 0 quit)?4
+--------------------
+회원정보삭제
+--------------------
+회원번호: M001
+M001  hong       010-1234-1234   hong@test.com        2017-12-18   개발부
+1개의 결과가 있습니다.
+---------------------
+
+삭제할까요(y/n)?y
+삭제되었습니다.
+-----------------------------------------------------
+1.회원정보입력 2.회원정보(정렬)출력 3.회원정보검색 4.회원정보삭제
+-----------------------------------------------------
+선택(1~4, 0 quit)?0
+프로그램 종료
+
+
+
+
+
+
+------------------------------------------------
+- 프로그램 구성 요소
+Dept.java
+Main.java
+Member.java
+MemberDAO.java
+MemberService.java
+
+
+------------------------------------------------
+- 프로그램 소스 코드
+//Dept.java
+package com.test;
+
+import java.util.*;
+
+//부서 정보 관리용 클래스
+public class Dept {
+	
+	//부서 정보는 개발부(B01), 마케팅부(B02), 총무부(B03)만 존재한다고 가정.
+	private static Map<String, String> map = new HashMap<String,String>();
+	
+	static {
+		map.put("B01", "개발부");
+		map.put("B02", "마케팅부");
+		map.put("B03", "총무부");
+	}
+
+	public static Map<String, String> getMap() {
+		return map;
+	}
+	
+	public static String getValue(String key) {
+		return map.get(key);
+	}
+
+	//"{B01=개발부, B02=마케팅부, B03=총무부}"
+	public static String getList() {
+		
+		//문제) 부서 정보 전체를 하나의 문자열로 만들고 반환하는 과정 추가.
+		return map.toString();
+		
+	}
+	
+}
+
+
+
+
+
+
+
+//Member.java
+package com.test;
+
+//자료형 클래스
+public class Member {
+
+	// 화면 설계를 토대로 항목 결정.
+	// 회원번호(M001 형식), 이름, 전화번호, 이메일, 등록일(yyyy-MM-dd), 부서번호
+	// 주의) 부서 정보는 개발부(B01), 마케팅부(B02), 총무부(B03)만 존재한다고 가정.
+
+	private String mid, name, phone, email, regDate, deptId;
+
+	// 기본 생성자 추가
+	public Member() {
+	}
+
+	// 매개변수 목록이 있는 생성자 추가
+	public Member(String mid, String name, String phone, String email, String regDate, String deptId) {
+		this.mid = mid;
+		this.name = name;
+		this.phone = phone;
+		this.email = email;
+		this.regDate = regDate;
+		this.deptId = deptId;
+	}
+
+	public String getMid() {
+		return mid;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public String getRegDate() {
+		return regDate;
+	}
+
+	public String getDeptId() {
+		return deptId;
+	}
+
+	// 회원 정보 출력용 메소드 추가
+	@Override
+	public String toString() {
+		return String.format("%-5s %-10s %-15s %-20s %-12s %s", this.mid, this.name, this.phone, this.email, this.regDate,
+				Dept.getValue(this.deptId));
+	}
+
+	// 회원번호 비교용 오버라이딩 메소드
+	@Override
+	public boolean equals(Object obj) {
+		boolean result = false;
+		if (obj instanceof Member) {
+			Member m = (Member)obj;
+			result = this.mid.equals(m.getMid());
+		}
+		return result;
+	}
+
+	
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+//MemberDAO.java
+package com.test;
+
+import java.util.*;
+
+public class MemberDAO {
+
+	private List<Member> list = new ArrayList<Member>();
+
+	// 회원 정보 입력 메소드
+	public void memberAdd(String name, String phone, String email, String regDate, String deptId) {
+
+		Member max = null;
+		String mid = "M001";
+		if (this.list.size() > 0) {
+			//기존 번호 분석 -> 저장 순서가 유지되므로 마지막 값이 가장 큰 값이다.
+			max = this.list.get(this.list.size()-1);
+			//신규 번호 생성 -> max 변수의 값을 분석해서 +1 연산 수행
+			mid = String.format("M%03d", Integer.parseInt(max.getMid().substring(1)) + 1);
+		}
+		
+		Member m = new Member(mid, name, phone, email, regDate, deptId);
+		list.add(m);
+
+	}
+
+	// 회원 정보 출력 메소드
+	public String memberList() {
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append(String.format("총: %d건%n", this.list.size()));
+		sb.append(String.format("-----------------------------------------------------%n"));
+		for (Member temp : this.list) {
+			sb.append(String.format("%s%n", temp));
+		}
+		return sb.toString();
+	}
+	
+	// 회원 정보 출력 메소드 -> 정렬 기능 지원
+	public String memberList(String key) {
+		StringBuilder sb = new StringBuilder();
+		
+		Collections.sort(list, new Comparator<Member>() {
+			@Override
+			public int compare(Member o1, Member o2) {
+				int result = 0;
+				if (key.equals("회원번호")) {
+					result = o1.getMid().compareTo(o2.getMid());
+				} else if (key.equals("이름")) {
+					result = o1.getName().compareTo(o2.getName());
+				} else if (key.equals("전화번호")) {
+					result = o1.getPhone().compareTo(o2.getPhone());
+				} else if (key.equals("이메일")) {
+					result = o1.getEmail().compareTo(o2.getEmail());
+				} else if (key.equals("등록일")) {
+					result = o1.getRegDate().compareTo(o2.getRegDate());
+				} else if (key.equals("부서명")) {
+					result = Dept.getValue(o1.getDeptId()).compareTo(Dept.getValue(o2.getDeptId()));
+				}
+				return result;
+			}
+		});
+		
+		sb.append(String.format("총: %d건%n", this.list.size()));
+		sb.append(String.format("-----------------------------------------------------%n"));
+		for (Member temp : this.list) {
+			sb.append(String.format("%s%n", temp));
+		}
+		return sb.toString();
+	}
+	
+	
+	// 회원 정보 검색 메소드
+	public String memberSearch(String key, String value) {
+		StringBuilder sb = new StringBuilder();
+
+		int a = 0;
+		for (Member m : this.list) {
+			if (key.equals("회원번호") && m.getMid().equals(value)) {
+				sb.append(String.format("%s%n", m));
+				++a;
+			} else if (key.equals("이름") && m.getName().contains(value)) {
+				sb.append(String.format("%s%n", m));
+				++a;
+			} else if (key.equals("전화번호") && m.getPhone().contains(value)) {
+				sb.append(String.format("%s%n", m));
+				++a;
+			} else if (key.equals("이메일") && m.getEmail().contains(value)) {
+				sb.append(String.format("%s%n", m));
+				++a;
+			} else if (key.equals("등록일") && m.getRegDate().contains(value)) {
+				sb.append(String.format("%s%n", m));
+				++a;
+			} else if (key.equals("부서번호") && m.getDeptId().equals(value)) {
+				sb.append(String.format("%s%n", m));
+				++a;
+			}
+		}
+
+		if (a > 0) {
+			sb.append(String.format("%s개의 결과가 있습니다.%n", a));
+		} else {
+			sb.append(String.format("검색 결과가 없습니다.%n"));
+		}
+		sb.append(String.format("---------------------%n"));
+
+		return sb.toString();
+	}
+	
+	
+	//회원 정보 삭제
+	public void memberRemove(Member m) {
+		this.list.remove(m);
+	}
+
+}
+
+
+
+
+
+
+
+
+
+//MemberService.java
+package com.test;
+
+import java.util.*;
+
+public class MemberService {
+
+	// (컬렉션) 저장소 객체 확보
+	private MemberDAO dao = new MemberDAO();
+
+	// 회원 정보 입력 메소드
+	public void memberAdd(Scanner sc) {
+		System.out.println("--------------");
+		System.out.println("회원정보입력");
+		System.out.println("--------------");
+
+		// 콘솔 입력
+		System.out.print("이름: ");
+		String name = sc.nextLine();
+		System.out.print("전화번호: ");
+		String phone = sc.nextLine();
+		System.out.print("이메일: ");
+		String email = sc.nextLine();
+		System.out.print("등록일(yyyy-MM-dd): ");
+		String regDate = sc.nextLine();
+
+		// 부서번호 입력
+		System.out.println(Dept.getList());
+		System.out.print("부서번호: ");
+		String deptId = sc.nextLine();
+
+		// 회원 정보 입력 메소드 호출
+		this.dao.memberAdd(name, phone, email, regDate, deptId);
+		System.out.println("회원 정보 입력이 성공했습니다");
+	}
+
+	// 회원 정보 출력 메소드
+	public void memberList() {
+		System.out.println("--------------");
+		System.out.println("회원정보출력");
+		System.out.println("--------------");
+		System.out.println(this.dao.memberList());
+	}
+
+	// 회원 정보 출력 메소드 -> 정렬 기능 지원
+	public void memberList(Scanner sc) {
+		// 정렬을 위한 서브메뉴 운영
+		boolean run = true;
+		while (run) {
+			System.out.println("----------------------------------------------------------------------------");
+			System.out.println("3. 회원정보(정렬)출력>");
+			System.out.println("1. 회원번호기준  2. 이름기준  3. 전화번호기준  4. 이메일기준  5. 등록일기준  6. 부서번호기준");
+			System.out.println("----------------------------------------------------------------------------");
+			System.out.print("선택(1~6, 0 quit)?");
+			int selectNo = sc.nextInt();
+			sc.nextLine();
+
+			switch (selectNo) {
+			case 0: run = false; break;
+			case 1:	this.memberList(sc, "회원번호"); break;
+			case 2:	this.memberList(sc, "이름"); break;
+			case 3:	this.memberList(sc, "전화번호"); break;
+			case 4:	this.memberList(sc, "이메일"); break;
+			case 5:	this.memberList(sc, "등록일"); break;
+			case 6:	this.memberList(sc, "부서번호"); break;
+			}
+		}
+	}
+	
+	private void memberList(Scanner sc, String key) {
+		System.out.println("--------------------");
+		System.out.printf("회원정보출력(%s)%n", key);
+		System.out.println("--------------------");
+
+		// 정렬 진행
+		// -> 매개변수 목록에 key, value를 같이 보낸다.
+		System.out.println(this.dao.memberList(key));
+	}
+
+	// 회원 정보 검색 메소드
+	public void memberSearch(Scanner sc) {
+
+		// 검색을 위한 서브메뉴 운영
+		boolean run = true;
+		while (run) {
+			System.out.println("----------------------------------------------------------------------------");
+			System.out.println("3. 회원정보검색>");
+			System.out.println("1. 회원번호기준  2. 이름기준  3. 전화번호기준  4. 이메일기준  5. 등록일기준  6. 부서번호기준");
+			System.out.println("----------------------------------------------------------------------------");
+			System.out.print("선택(1~6, 0 quit)?");
+			int selectNo = sc.nextInt();
+			sc.nextLine();
+
+			switch (selectNo) {
+			case 0: run = false; break;
+			case 1:	this.memberSearch(sc, "회원번호"); break;
+			case 2:	this.memberSearch(sc, "이름"); break;
+			case 3:	this.memberSearch(sc, "전화번호"); break;
+			case 4:	this.memberSearch(sc, "이메일"); break;
+			case 5:	this.memberSearch(sc, "등록일"); break;
+			case 6:	this.memberSearch(sc, "부서번호"); break;
+			}
+		}
+	}
+
+	private void memberSearch(Scanner sc, String key) {
+		System.out.println("--------------------");
+		System.out.printf("회원정보검색(%s)%n", key);
+		System.out.println("--------------------");
+		if (key.equals("부서번호")) {
+			System.out.println(Dept.getList());
+		}
+		System.out.printf("%s: ", key);
+		String value = sc.nextLine();
+
+		// 검색 진행
+		// -> 매개변수 목록에 key, value를 같이 보낸다.
+		System.out.println(this.dao.memberSearch(key, value));
+	}
+
+	public void memberRemove(Scanner sc) {
+		System.out.println("--------------------");
+		System.out.printf("회원정보삭제%n");
+		System.out.println("--------------------");
+		System.out.printf("회원번호: ");
+		String value = sc.nextLine();
+		// 검색 진행
+		// -> 매개변수 목록에 key, value를 같이 보낸다.
+		String key = "회원번호";
+		String result = this.dao.memberSearch(key, value);
+		System.out.println(result);
+		
+		if (result.contains("검색 결과가 없습니다.")) {
+			
+		} else {
+			System.out.printf("삭제할까요(y/n)?");
+			String yn = sc.nextLine();
+			if (yn.equalsIgnoreCase("y")) {
+				Member m = new Member(value, "", "", "", "", "");
+				this.dao.memberRemove(m);
+				System.out.println("삭제되었습니다.");
+			}
+		}
+		
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+//Main.java
+package com.test;
+
+import java.util.*;
+
+public class Main {
+
+	public static void main(String[] args) {
+
+		Scanner sc = new Scanner(System.in);
+		MemberService service = new MemberService();
+
+		// 메인 메뉴 액션
+		boolean run = true;
+		while (run) {
+			System.out.println("-----------------------------------------------------");
+			System.out.println("1.회원정보입력 2.회원정보(정렬)출력 3.회원정보검색 4.회원정보삭제");
+			System.out.println("-----------------------------------------------------");
+			System.out.print("선택(1~4, 0 quit)?");
+
+			int answer = sc.nextInt();
+			sc.nextLine();
+
+			switch (answer) {
+			case 0:	run = false; break;
+			case 1:	service.memberAdd(sc); break;
+			case 2:	service.memberList(sc); break;
+			case 3:	service.memberSearch(sc); break;
+			case 4:	service.memberRemove(sc); break;
+			}
+
+		}
+
+		sc.close();
+		System.out.println("프로그램 종료");
+
+	}
+
+}
+
+
+
+
+-------------------------------------

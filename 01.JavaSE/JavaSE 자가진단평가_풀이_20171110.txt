@@ -1,0 +1,193 @@
+-------------
+문제1) 세 개의 임의의 수 중에서 가장 큰 수를 얻는 코드 작성. 삼항연산자 사용.
+
+package com.test;
+
+public class Test {
+
+	public static void main(String[] args) {
+
+		// 세 개의 임의의 수 중에서 가장 큰 수를 얻는 과정
+		int a = 40;
+		int b = 30;
+		int c = 10;
+
+		int temp = (a > b) ? a : b;
+		int max = (temp > c) ? temp : c;
+		System.out.println(max);
+		
+	}
+
+}
+
+
+
+--------------
+문제2) 변수(score)의 초기값을 난수(0~100)로 채우고, A, B, C, D 등급으로 구분해서 출력하는 코드 작성. if~else if~else 구문 사용.
+90점 이상 -> A
+80점 이상 -> B
+70점 이상 -> C
+70점 미만 -> D
+
+
+package com.test;
+
+public class Test {
+
+	public static void main(String[] args) {
+
+		//변수의 초기값을 난수(0~100)로 채운다
+		int score = (int)(Math.random()*101);
+		
+		if (score >= 90) {
+			System.out.println("점수가 90 이상 입니다.");
+			System.out.println("등급은 A 입니다.");
+		} else if (score >= 80) {
+			System.out.println("점수가 80 이상 입니다.");
+			System.out.println("등급은 B 입니다.");
+		} else if (score >= 70) {
+			System.out.println("점수가 70 이상 입니다.");
+			System.out.println("등급은 C 입니다.");
+		} else {
+			System.out.println("점수가 70 미만 입니다.");
+			System.out.println("등급은 D 입니다.");
+		}
+		
+	}
+
+}
+
+
+
+
+--------------
+문제3) 과목 3개의 총점을 가지고 합격, 불합격, 과락을 구분해서 출력하는 코드 작성. 중첩 if문 사용
+합격 - 평균이 60점 이상이면서, 과목당 점수가 모두 40점 이상
+과락 - 평균이 60점 이상이지만, 과목 점수가 40점 미만인 경우
+불합격 - 평균이 60점 미만인 경우
+
+
+package com.test;
+
+public class Test {
+
+	public static void main(String[] args) {
+
+		int kor = (int)( Math.random() * 101);
+		int eng = (int)( Math.random() * 101);
+		int mat = (int)( Math.random() * 101);
+
+		double avg = (kor + eng + mat) / 3.0;
+
+		if (avg >= 60) {
+			if (kor >= 40 && eng >= 40 && mat >= 40) {
+				System.out.printf("%.1f:합격입니다.%n", avg);
+			} else {
+				System.out.printf("%.1f:과락입니다.%n", avg);
+			}
+		} else {
+			System.out.printf("%.1f:불합격입니다.%n", avg);
+		}
+
+	}
+
+}
+
+
+
+
+-------------
+문제4) 1부터 100까지의 수에 대한 합산을 출력하되, 아래 형태로 출력. 숫자 출력시 10단위마다 줄바꿈 출력. for문 이용.
+출력예)
+ 1 2 3 4 5 6 7 8 9 10
+ 11 12 13 14 15 16 17 18 19 20
+ ...
+ 91 92 93 94 95 96 97 98 99 100
+ ------------------
+ 5050
+
+
+package com.test;
+
+public class Test {
+
+	public static void main(String[] args) {
+
+		int sum = 0;
+		for (int a = 1; a <= 100; ++a) {
+			System.out.printf("%d ", a);
+			sum += a;
+			if (a % 10 == 0) {
+				System.out.print("\n");
+			}
+		}
+		System.out.println("---------------");
+		System.out.printf("%d%n", sum);
+
+	}
+
+}
+
+
+
+
+
+
+-------------
+문제5) 별문자(*)를 아래 형태로 출력하는 코드 작성. 중첩 for 구문 이용.
+출력 예)
+* 
+* * 
+* * * 
+* * * * 
+* * * * *
+
+
+package com.test;
+
+public class Test {
+
+	public static void main(String[] args) {
+
+		for (int a = 1; a <= 5; ++a) {
+			for (int b = 1; b <= a; ++b) {
+				System.out.print("* ");
+			}
+			System.out.print("\n");
+		}
+
+	}
+
+}
+
+
+
+
+-------------
+문제6) 주민번호("010624-1230123")가 저장된 문자열에서 성별 부분(7번째 문자)을 얻어서 '남자입니다', '여자입니다' 구분 출력하는 코드 작성. charAt() 메소드, switch 구문 이용.
+
+
+
+package com.test;
+
+public class Test {
+
+	public static void main(String[] args) {
+
+		String a = "010624-1230123";
+		char b = a.charAt(7);
+		switch (b) {
+		case '1':
+		case '3':
+			System.out.println("남자입니다.");
+			break;
+		case '2':
+		case '4':
+			System.out.println("여자입니다.");
+			break;
+		}
+
+	}
+
+}
+

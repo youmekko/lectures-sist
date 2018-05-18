@@ -1,0 +1,21 @@
+CREATE TABLE Student(
+   ID   INT NOT NULL AUTO_INCREMENT,  /* PK */
+   NAME_ VARCHAR(20) NOT NULL,
+   AGE  INT NOT NULL,
+   PRIMARY KEY (ID)
+);
+
+
+CREATE TABLE Marks(
+   SID INT NOT NULL, /* FK */
+   MARKS  INT NOT NULL,
+   YEAR   INT NOT NULL
+);
+
+ALTER TABLE Marks
+	ADD CONSTRAINT marks_sid_fk FOREIGN KEY (sid)
+			REFERENCES Student(id);
+            
+SELECT * FROM student;  
+SELECT * FROM marks;  
+

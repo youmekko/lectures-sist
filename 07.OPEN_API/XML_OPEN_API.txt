@@ -1,0 +1,3 @@
+- 기상청 육상 중기예보
+http://www.kma.go.kr/weather/forecast/mid-term-rss3.jsp?stnId=109
+

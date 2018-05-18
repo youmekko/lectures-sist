@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.test.mapper.AdminGuestBookMapper">
+
+	<select id="guestBookList" resultType="com.test.domain.AdminGuestBook">
+		SELECT gid, name_, content, regDate, clientIP, blind FROM guestbook
+		<if test="key == 'name_'">
+		 WHERE INSTR(name_, #{value})
+		</if>
+		<if test="key == 'content'">
+		 WHERE INSTR(content, #{value})
+		</if>
+		<if test="key == 'regDate'">
+		 WHERE INSTR(regDate, #{value})
+		</if>
+		ORDER BY gid DESC
+		<if test="key == 'ALL'">
+		LIMIT #{limit_offset}, #{limit_count}
+		</if>		
+	</select>
+
+	<select id="totalCount" resultType="Integer">
+		SELECT COUNT(*) AS totalCount FROM guestbook
+	</select>
+	
+	<update id="blind">
+		UPDATE guestbook SET blind=#{blind} WHERE gid=#{gid}
+	</update>
+	
+	<select id="picList" resultType="com.test.domain.AdminGuestBook">
+		SELECT pid, picName, picContent FROM pictureList 
+		<if test="key == 'pid'">
+		 WHERE pid=#{pid}
+		</if>
+		ORDER BY pid
+	</select>
+	
+	<insert id="pictureAdd">
+		INSERT INTO pictureList (pid, picName, picContent) 
+			VALUES ((SELECT * FROM (SELECT CONCAT('P', LPAD(IFNULL(SUBSTRING(MAX(pid), 2), 0) + 1, 3, 0)) AS newPid FROM pictureList) p)
+			, #{picName}, #{picContent})
+	</insert>
+	
+	<delete id="pictureRemove">
+		DELETE FROM picturelist WHERE pid = #{pid}
+	</delete>
+	
+</mapper>  

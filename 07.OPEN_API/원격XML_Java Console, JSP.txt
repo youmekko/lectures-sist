@@ -1,0 +1,672 @@
+-----------------------------------------------------
+원격 XML 데이터 읽기 (Java 프로그램)
+- 기상청 RSS
+http://www.kma.go.kr/weather/lifenindustry/sevice_rss.jsp
+- 기상청 육상 중기예보
+http://www.kma.go.kr/weather/forecast/mid-term-rss3.jsp?stnId=109
+
+stnId=108 (전국)
+stnId=109 (서울, 경기)
+stnId=105 (강원)
+stnId=131 (충청북도)
+stnId=133 (충청남도)
+stnId=146 (전라북도)
+stnId=156 (전라남도)
+stnId=143 (경상북도)
+stnId=159 (경상남도)
+stnId=184 (제주특별자치도)
+
+
+//Sample04.java
+package com.test;
+
+import java.net.URL;
+import java.util.Scanner;
+
+import javax.xml.parsers.*;
+
+import org.w3c.dom.*;
+import org.xml.sax.InputSource;
+
+public class Sample04 {
+
+	public static void main(String[] args) {
+
+		Scanner sc = new Scanner(System.in);
+		String[] stnId = { "108", "109", "105", "131", "133", "146", "156", "143", "159", "184" };
+
+		do {
+			try {
+				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder builder = factory.newDocumentBuilder();
+				Document xmlObj = null;
+
+				// LOCAL XML 파일인 경우
+				/*
+				 * String url = "RSS.xml"; xmlObj = builder.parse(url);
+				 */
+
+				// REMOTE XML 파일인 경우
+				/*
+				 * stnId=108 (전국) stnId=109 (서울, 경기) stnId=105 (강원) stnId=131
+				 * (충청북도) stnId=133 (충청남도) stnId=146 (전라북도) stnId=156 (전라남도)
+				 * stnId=143 (경상북도) stnId=159 (경상남도) stnId=184 (제주특별자치도)
+				 */
+
+				// 외부 입력 처리 추가
+				System.out.println("기상청 육상 중기예보");
+				System.out.println("-------------------------");
+				System.out.println("1. 전국");
+				System.out.println("2. 서울, 경기");
+				System.out.println("3. 강원");
+				System.out.println("4. 충청북도");
+				System.out.println("5. 충청남도");
+				System.out.println("6. 전라북도");
+				System.out.println("7. 전라남도");
+				System.out.println("8. 경상북도");
+				System.out.println("9. 경상남도");
+				System.out.println("10. 제주특별자치도");
+				System.out.print("지역 선택(0 quit)?");
+				String m = sc.nextLine();
+				if (m.equals("0")) {
+					break;
+				}
+
+				String str = String.format("http://www.kma.go.kr/weather/forecast/mid-term-rss3.jsp?stnId=%s",
+						stnId[Integer.parseInt(m) - 1]);
+				URL url = new URL(str);
+				InputSource is = new InputSource(url.openStream());
+				xmlObj = builder.parse(is);
+
+				// ROOT 엘리먼트 접근
+				Element root = xmlObj.getDocumentElement();
+
+				// 3-1. Title 뽑아내기
+				Node itemNode = root.getElementsByTagName("item").item(0);
+				Element itemElement = (Element) itemNode;
+
+				System.out.printf("%s%n%n", XMLDOM.getText(itemElement, "title"));
+
+				// 3-2. 기상 전망 뽑아내기
+				Node wfNode = root.getElementsByTagName("wf").item(0);
+				Element wfElement = (Element) wfNode;
+
+				System.out.println("[기상전망]----------------------------");
+				System.out.printf("%s%n%n", wfElement.getTextContent());
+
+				// 3-3. 도시별 기상 예보 뽑아내기
+				System.out.println("[육상날씨]----------------------------");
+
+				NodeList locationNodeList = root.getElementsByTagName("location");
+
+				for (int i = 0; i < locationNodeList.getLength(); ++i) {
+
+					Node locationNode = locationNodeList.item(i);
+					Element locationElement = (Element) locationNode;
+
+					System.out.printf("도시 : %s%n", XMLDOM.getText(locationElement, "city"));
+
+					System.out.println("------------------------------------");
+
+					NodeList dataNodeList = locationElement.getElementsByTagName("data");
+
+					for (int j = 0; j < dataNodeList.getLength(); ++j) {
+
+						Node dataNode = dataNodeList.item(j);
+						Element dataElement = (Element) dataNode;
+
+						System.out.printf("    %s / %s / %s~%s / %s%n", XMLDOM.getText(dataElement, "tmEf"),
+								XMLDOM.getText(dataElement, "wf"), XMLDOM.getText(dataElement, "tmn"),
+								XMLDOM.getText(dataElement, "tmx"), XMLDOM.getText(dataElement, "reliability"));
+
+					}
+
+					System.out.println("--------------------------------");
+				}
+
+				System.out.print("press any key to continue....");
+				sc.nextLine(); // Enter키 포함
+				System.out.println();
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} while (true);
+
+		sc.close();
+
+	}
+
+}
+
+
+
+
+
+실행예)
+기상청 육상 중기예보
+-------------------------
+1. 전국
+2. 서울, 경기
+3. 강원
+4. 충청북도
+5. 충청남도
+6. 전라북도
+7. 전라남도
+8. 경상북도
+9. 경상남도
+10. 제주특별자치도
+지역 선택(0 quit)?10
+제주도 육상 중기예보 - 2016년 05월 13일 (금)요일 06:00 발표
+
+[기상전망]----------------------------
+기압골의 영향으로 16일 오전에 비가 오겠고, 그 밖의 날은 고기압의 가장자리에 들어 가끔 구름많겠습니다.<br />기온은 평년(최저기온 : 14~16도, 최고기온 : 21~23도)과 비슷하거나 조금 높겠습니다.<br />강수량은 평년(2~4mm)보다 많겠습니다.<br />바다의 물결은 제주도전해상과 남해서부먼바다에서 1.0~3.0m로 일겠습니다.
+
+[육상날씨]----------------------------
+도시 : 제주
+------------------------------------
+    2016-05-16 00:00 / 흐리고 비 / 15~19 / 높음
+    2016-05-16 12:00 / 구름많음 / 15~19 / 낮음
+    2016-05-17 00:00 / 구름많음 / 15~22 / 보통
+    2016-05-17 12:00 / 구름많음 / 15~22 / 보통
+    2016-05-18 00:00 / 구름조금 / 16~23 / 보통
+    2016-05-18 12:00 / 구름조금 / 16~23 / 보통
+    2016-05-19 00:00 / 구름많음 / 18~23 / 보통
+    2016-05-19 12:00 / 구름많음 / 18~23 / 보통
+    2016-05-20 00:00 / 구름많음 / 17~22 / 보통
+    2016-05-20 12:00 / 구름많음 / 17~22 / 보통
+    2016-05-21 00:00 / 구름많음 / 17~22 / 보통
+    2016-05-22 00:00 / 구름조금 / 17~23 / 보통
+    2016-05-23 00:00 / 구름조금 / 17~23 / 보통
+--------------------------------
+도시 : 서귀포
+------------------------------------
+    2016-05-16 00:00 / 흐리고 비 / 16~21 / 높음
+    2016-05-16 12:00 / 구름많음 / 16~21 / 낮음
+    2016-05-17 00:00 / 구름많음 / 16~23 / 보통
+    2016-05-17 12:00 / 구름많음 / 16~23 / 보통
+    2016-05-18 00:00 / 구름조금 / 17~23 / 보통
+    2016-05-18 12:00 / 구름조금 / 17~23 / 보통
+    2016-05-19 00:00 / 구름많음 / 18~23 / 보통
+    2016-05-19 12:00 / 구름많음 / 18~23 / 보통
+    2016-05-20 00:00 / 구름많음 / 18~23 / 보통
+    2016-05-20 12:00 / 구름많음 / 18~23 / 보통
+    2016-05-21 00:00 / 구름많음 / 18~23 / 보통
+    2016-05-22 00:00 / 구름조금 / 18~24 / 보통
+    2016-05-23 00:00 / 구름조금 / 18~24 / 보통
+--------------------------------
+press any key to continue....
+
+
+
+
+
+
+----------------------------------------------------
+원격 XML 데이터 읽기 (XPath 이용)
+- 기상청 RSS
+http://www.kma.go.kr/weather/lifenindustry/sevice_rss.jsp
+- 기상청 육상 중기예보
+http://www.kma.go.kr/weather/forecast/mid-term-rss3.jsp?stnId=109
+
+stnId=108 (전국)
+stnId=109 (서울, 경기)
+stnId=105 (강원)
+stnId=131 (충청북도)
+stnId=133 (충청남도)
+stnId=146 (전라북도)
+stnId=156 (전라남도)
+stnId=143 (경상북도)
+stnId=159 (경상남도)
+stnId=184 (제주특별자치도)
+
+
+//Sample05.java
+package com.test;
+
+import java.net.URL;
+import java.util.Scanner;
+
+import javax.xml.parsers.*;
+
+import org.w3c.dom.*;
+import org.xml.sax.InputSource;
+
+import javax.xml.xpath.*; //XPath 
+
+public class Sample05 {
+
+	public static void main(String[] args) {
+
+		Scanner sc = new Scanner(System.in);
+		String[] stnId = { "108", "109", "105", "131", "133", "146", "156", "143", "159", "184" };
+
+		try {
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document xmlObj = null;
+
+			// LOCAL XML 파일인 경우
+			/*
+			 * String url = "RSS.xml"; xmlObj = builder.parse(url);
+			 */
+
+			// REMOTE XML 파일인 경우
+			/*
+			 * stnId=108 (전국) stnId=109 (서울, 경기) stnId=105 (강원) stnId=131 (충청북도)
+			 * stnId=133 (충청남도) stnId=146 (전라북도) stnId=156 (전라남도) stnId=143
+			 * (경상북도) stnId=159 (경상남도) stnId=184 (제주특별자치도)
+			 */
+
+			String str = String.format("http://www.kma.go.kr/weather/forecast/mid-term-rss3.jsp?stnId=%s", stnId[1]);
+			URL url = new URL(str);
+			InputSource is = new InputSource(url.openStream());
+			xmlObj = builder.parse(is);
+
+			// XPath에 의한 XML 엘리먼트 탐색
+			XPath xPath = XPathFactory.newInstance().newXPath();
+			/*
+			 * //XPath String expression =
+			 * "/Employees/Employee[@emplid='3333']/email"; //read a string
+			 * value String email =
+			 * xPath.compile(expression).evaluate(xmlDocument); //read an xml
+			 * node using xpath Node node = (Node)
+			 * xPath.compile(expression).evaluate(xmlDocument,
+			 * XPathConstants.NODE); //read a nodelist using xpath NodeList
+			 * NodeList nodeList =
+			 * (NodeList)xPath.compile(expression).evaluate(xmlDocument,
+			 * XPathConstants.NODESET);
+			 */
+
+			// 루트 엘리먼트 접근
+			Node rootNode = (Node) xPath.compile("/rss").evaluate(xmlObj, XPathConstants.NODE);
+			// System.out.println(rootNode.getNodeName()); //rss
+
+			// 특정 엘리먼트의 텍스트 접근
+			String title = xPath.compile("/rss/channel/item/title").evaluate(xmlObj);
+			System.out.printf("%s%n%n", title);
+			
+			//기상 정보 출력
+			
+			
+
+			NodeList locationNodeList = (NodeList) xPath.compile("/rss/channel/item/description/body/location")
+					.evaluate(xmlObj, XPathConstants.NODESET);
+
+			for (int a = 1; a <= locationNodeList.getLength(); ++a) {
+
+				String city = xPath.compile(String.format("/rss/channel/item/description/body/location[%s]/city", a)).evaluate(xmlObj);
+				System.out.printf("도시 : %s %n", city);
+				
+				NodeList dataNodeList = (NodeList) xPath.compile(String.format("/rss/channel/item/description/body/location[%s]/data", a)).evaluate(xmlObj, XPathConstants.NODESET);
+				for (int i = 0; i < dataNodeList.getLength(); ++i) {
+					Node dataNode = dataNodeList.item(i);
+					if (dataNode.getNodeType() == 1) {
+						Element dataElement = (Element) dataNode;
+						System.out.printf("    %s / %s / %s~%s / %s%n", XMLDOM.getText(dataElement, "tmEf"),
+								XMLDOM.getText(dataElement, "wf"), XMLDOM.getText(dataElement, "tmn"),
+								XMLDOM.getText(dataElement, "tmx"), XMLDOM.getText(dataElement, "reliability"));
+					}
+				}
+				System.out.println("--------------------------");
+			}
+
+			System.out.print("press any key to continue....");
+			sc.nextLine(); // Enter키 포함
+			System.out.println();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		sc.close();
+
+	}
+
+}
+
+
+
+출력예)
+서울,경기도 육상 중기예보 - 2016년 05월 13일 (금)요일 06:00 발표
+
+기압골의 영향으로 15~16일은 비가 오겠고, 그 밖의 날은 고기압의 영향으로 대체로 맑은 날이 많겠습니다.<br />기온은 평년(최저기온 : 10~13도, 최고기온 : 21~25도)과 비슷하거나 조금 높겠습니다.<br />강수량은 평년(2~5mm)보다 많겠습니다.<br />서해중부해상의 물결은 15일은 1.0~2.5m로 높게 일겠고, 그 밖의 날은 0.5~2.0m로 일겠습니다.
+
+도시 : 서울 
+    2016-05-16 00:00 / 흐리고 비 / 12~20 / 높음
+    2016-05-16 12:00 / 구름많음 / 12~20 / 보통
+    2016-05-17 00:00 / 구름조금 / 13~24 / 보통
+    2016-05-17 12:00 / 구름조금 / 13~24 / 보통
+    2016-05-18 00:00 / 구름조금 / 14~26 / 보통
+    2016-05-18 12:00 / 구름조금 / 14~26 / 보통
+    2016-05-19 00:00 / 구름많음 / 15~27 / 보통
+    2016-05-19 12:00 / 구름많음 / 15~27 / 보통
+    2016-05-20 00:00 / 구름조금 / 17~27 / 보통
+    2016-05-20 12:00 / 구름조금 / 17~27 / 보통
+    2016-05-21 00:00 / 구름조금 / 17~27 / 보통
+    2016-05-22 00:00 / 구름조금 / 18~27 / 보통
+    2016-05-23 00:00 / 구름조금 / 18~27 / 보통
+--------------------------
+도시 : 인천 
+    2016-05-16 00:00 / 흐리고 비 / 12~20 / 높음
+    2016-05-16 12:00 / 구름많음 / 12~20 / 보통
+    2016-05-17 00:00 / 구름조금 / 13~22 / 보통
+    2016-05-17 12:00 / 구름조금 / 13~22 / 보통
+    2016-05-18 00:00 / 구름조금 / 14~23 / 보통
+    2016-05-18 12:00 / 구름조금 / 14~23 / 보통
+    2016-05-19 00:00 / 구름많음 / 14~24 / 보통
+    2016-05-19 12:00 / 구름많음 / 14~24 / 보통
+    2016-05-20 00:00 / 구름조금 / 15~24 / 보통
+    2016-05-20 12:00 / 구름조금 / 15~24 / 보통
+    2016-05-21 00:00 / 구름조금 / 16~24 / 보통
+    2016-05-22 00:00 / 구름조금 / 16~24 / 보통
+    2016-05-23 00:00 / 구름조금 / 16~24 / 보통
+--------------------------
+도시 : 수원 
+    2016-05-16 00:00 / 흐리고 비 / 13~20 / 높음
+    2016-05-16 12:00 / 구름많음 / 13~20 / 보통
+    2016-05-17 00:00 / 구름조금 / 13~25 / 보통
+    2016-05-17 12:00 / 구름조금 / 13~25 / 보통
+    2016-05-18 00:00 / 구름조금 / 14~26 / 보통
+    2016-05-18 12:00 / 구름조금 / 14~26 / 보통
+    2016-05-19 00:00 / 구름많음 / 15~27 / 보통
+    2016-05-19 12:00 / 구름많음 / 15~27 / 보통
+    2016-05-20 00:00 / 구름조금 / 16~27 / 보통
+    2016-05-20 12:00 / 구름조금 / 16~27 / 보통
+    2016-05-21 00:00 / 구름조금 / 16~27 / 보통
+    2016-05-22 00:00 / 구름조금 / 17~27 / 보통
+    2016-05-23 00:00 / 구름조금 / 17~27 / 보통
+--------------------------
+도시 : 파주 
+    2016-05-16 00:00 / 흐리고 비 / 11~20 / 높음
+    2016-05-16 12:00 / 구름많음 / 11~20 / 보통
+    2016-05-17 00:00 / 구름조금 / 9~24 / 보통
+    2016-05-17 12:00 / 구름조금 / 9~24 / 보통
+    2016-05-18 00:00 / 구름조금 / 10~26 / 보통
+    2016-05-18 12:00 / 구름조금 / 10~26 / 보통
+    2016-05-19 00:00 / 구름많음 / 11~27 / 보통
+    2016-05-19 12:00 / 구름많음 / 11~27 / 보통
+    2016-05-20 00:00 / 구름조금 / 13~27 / 보통
+    2016-05-20 12:00 / 구름조금 / 13~27 / 보통
+    2016-05-21 00:00 / 구름조금 / 13~27 / 보통
+    2016-05-22 00:00 / 구름조금 / 14~27 / 보통
+    2016-05-23 00:00 / 구름조금 / 14~27 / 보통
+--------------------------
+press any key to continue....
+
+
+
+
+
+-----------------------------------------------------
+원격 XML 데이터 읽기 (Java 프로그램)
+- RSS.xml 정보를 읽어내서 아래와 같이 출력하는 프로그램 작성
+- http://rss.hankooki.com/daily/dh_it_tech.xml
+
+//HankookI.java
+package com.test;
+
+import javax.xml.parsers.*;
+
+import org.w3c.dom.*;
+
+import java.net.URL;
+
+import org.xml.sax.InputSource;
+
+public class HankookI {
+
+	public static void main(String[] args) {
+
+		try {
+		
+			
+			//1. 원격 XML 정보를 요청하고, 그 결과를 메모리에 로드 -> XML DOM 형성
+			//2. 루트 엘리먼트 접근
+			//3. 특정 하위 엘리먼트 접근 -> 위치, 이름을 기준으로 접근
+			//4. 텍스트 노드(속성 노드)를 접근 -> 데이터 획득
+			//5. 결과 출력.	
+			
+			//원격 XML 정보를 요청하고, 그 결과를 메모리에 로드
+			DocumentBuilderFactory factory 
+				= DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder
+				= factory.newDocumentBuilder();
+			Document xmlObj = null;			
+			
+			String str = "http://rss.hankooki.com/daily/dh_it_tech.xml";
+			URL url = new URL(str);
+			InputSource is = new InputSource(url.openStream());
+			xmlObj = builder.parse(is);
+			
+			//루트 엘리먼트 접근
+			Element root = xmlObj.getDocumentElement();
+			//System.out.println(root.getNodeName()); //rss
+
+			Element channelElement = (Element)root.getElementsByTagName("channel").item(0);
+			System.out.printf("title> %s%n"
+					,getText(channelElement, "title"));
+			System.out.printf("link> %s%n"
+					,getText(channelElement, "link"));
+			System.out.printf("description> %s%n"
+					,getText(channelElement, "description"));
+			System.out.printf("copyright> %s%n"
+					,getText(channelElement, "copyright"));
+			System.out.println();
+			System.out.println("주요 기사 -----------------");
+			
+			NodeList itemNodes = channelElement.getElementsByTagName("item");
+			for (int i=0; i<itemNodes.getLength(); ++i) {
+				Element itemElement = (Element)itemNodes.item(i);
+				System.out.printf("title> %s%n"
+						, getText(itemElement, "title"));
+				System.out.printf("description> %s%n"
+						,getText(itemElement, "description"));
+				System.out.printf("link> %s%n"
+						,getText(itemElement, "link"));
+				System.out.printf("pubDate> %s%n%n"
+						,getText(itemElement, "pubDate"));
+			}
+		
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private static String getText(Element parent, String tagName) {
+		String result = "";
+		//특정 태그 이름을 가진 객체의 첫 번째 자식 노드를 얻는 과정
+		Node node = parent.getElementsByTagName(tagName).item(0);
+		Element element = (Element)node;
+		//특정 엘리먼트의 자식 노드(Text Node)의 값(nodeValue)를 얻는 과정
+		result = element.getChildNodes().item(0).getNodeValue();
+		return result;
+	}	
+	
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------
+원격 XML 데이터 읽기 (JSP 프로그램)
+- 기상청 육상 중기예보
+http://www.kma.go.kr/weather/forecast/mid-term-rss3.jsp?stnId=109
+
+stnId=108 (전국)
+stnId=109 (서울, 경기)
+stnId=105 (강원)
+stnId=131 (충청북도)
+stnId=133 (충청남도)
+stnId=146 (전라북도)
+stnId=156 (전라남도)
+stnId=143 (경상북도)
+stnId=159 (경상남도)
+stnId=184 (제주특별자치도)
+
+
+1. 프로그램 구성
+//Weather.java -> 사용자 정의 자료형 클래스.
+//WeatherDAO.java -> 날씨 정보 확인 액션 클래스.
+//WeatherInfo.jsp -> 지역 선택. 서브밋 액션. 날씨 정보 확인 및 출력.
+
+
+
+2. 화면 구성
+//Weather.jsp -> 지역 선택. 서브밋 액션. 날씨 정보 확인 및 출력.
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>기상청 육상 중기 예보</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet"
+	href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+<script
+	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+<script>
+	$(document).ready(function() {
+
+	});
+</script>
+
+</head>
+<body>
+	<div class="container">
+		<h2>
+			기상 정보<small>Bootstrap</small>
+		</h2>
+		<div class="panel-group">
+			<div class="panel panel-default">
+				<div class="panel-heading">지역 선택</div>
+				<div class="panel-body">
+					<form role="form" method="post">
+						<input type="radio" name="stnId" value="108" checked="checked">
+						전국 <input type="radio" name="stnId" value="109"> 서울,경기 <input
+							type="radio" name="stnId" value="105"> 강원 <input
+							type="radio" name="stnId" value="131"> 충청북도 <input
+							type="radio" name="stnId" value="133"> 충청남도 <input
+							type="radio" name="stnId" value="146"> 전라북도 <input
+							type="radio" name="stnId" value="156"> 전라남도 <input
+							type="radio" name="stnId" value="143"> 경상북도 <input
+							type="radio" name="stnId" value="159"> 경상남도 <input
+							type="radio" name="stnId" value="184"> 제주특별자치도
+
+						<button type="submit" class="btn btn-default">Submit</button>
+					</form>
+				</div>
+			</div>
+			<div class="panel panel-default">
+				<div class="panel-heading">기상 정보 출력</div>
+				<div class="panel-body">
+
+					<p>
+						<b>서울,경기도 육상 중기예보 - 2016년 05월 13일 (금)요일 06:00 발표</b>
+					</p>
+
+					<p>
+						기압골의 영향으로 15~16일은 비가 오겠고, 그 밖의 날은 고기압의 영향으로 대체로 맑은
+						날이 많겠습니다.<br />기온은 평년(최저기온 : 10~13도, 최고기온 : 21~25도)과 비슷하거나 조금
+						높겠습니다.<br />강수량은 평년(2~5mm)보다 많겠습니다.<br />서해중부해상의 물결은 15일은
+						1.0~2.5m로 높게 일겠고, 그 밖의 날은 0.5~2.0m로 일겠습니다.<br>
+					</p>
+					
+					<h3>서울</h3>
+					<table class="table">
+						<thead>
+							<tr>
+								<th>날짜</th>
+								<th>날씨</th>
+								<th>최저/최고 기온</th>
+								<th>신뢰도</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>2016-05-16 00:00</td>
+								<td><img src="images/NB08.png"> 흐리고 비</td>
+								<td>12~20</td>
+								<td>높음</td>
+							</tr>
+							<tr>
+								<td>2016-05-16 12:00</td>
+								<td><img src="images/NB02.png"> 구름 많음</td>
+								<td>12~20</td>
+								<td>높음</td>
+							</tr>
+						</tbody>
+					</table>
+
+
+					<h3>수원</h3>
+					<table class="table">
+						<thead>
+							<tr>
+								<th>날짜</th>
+								<th>날씨</th>
+								<th>최저/최고 기온</th>
+								<th>신뢰도</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>2016-05-16 00:00</td>
+								<td><img src="images/NB08.png"> 흐리고 비</td>
+								<td>12~20</td>
+								<td>높음</td>
+							</tr>
+							<tr>
+								<td>2016-05-16 12:00</td>
+								<td><img src="images/NB02.png"> 구름 많음</td>
+								<td>12~20</td>
+								<td>높음</td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+</body>
+</html>
+
+
+
+
+
+-----------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

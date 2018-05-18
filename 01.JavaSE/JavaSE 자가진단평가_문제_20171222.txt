@@ -1,0 +1,193 @@
+주의)
+메모장에 문제 복사한 후 풀이 작성하고 제출.
+제출시 '본인이름_20171222.txt' 파일로 만들고, 첨부 파일로 제출.
+제출은 각 팀별 파일서버 '자가진단평가' 폴더에 저장.
+
+
+
+---------------------------------
+문제1) 아래 화면 설계를 토대로 프로그램을 구현합니다. Dept.java, Member.java, MemberDAO.java, MemberService.java, Main.java
+
+- 자료 저장소로 컬렉션 이용
+- 회원 정보 입력, 회원 정보 출력 액션 구현
+- 화면 설계를 토대로 항목 결정->  회원번호, 이름, 전화번호, 이메일, 등록일(yyyy-MM-dd), 부서 ->자료형 클래스
+- 부서 정보는 개발부(B01), 마케팅부(B02), 총무부(B03)만 존재한다고 가정.
+- 회원 정보 입력시 회원번호는 자동 증가 및 관리되도록 한다. 회원번호 형식은 'M001' 형식을 가진다.
+
+
+- 화면 설계
+-----------------------------
+1.회원정보입력 2.회원정보출력
+-----------------------------
+선택(1~2, 0 quit)?1
+--------------
+회원정보입력
+--------------
+이름: hong
+전화번호: 010-1234-1234
+이메일: hong@test.com
+등록일(yyyy-MM-dd): 2017-12-18
+{B01=개발부, B02=마케팅부, B03=총무부}
+부서번호: B01
+회원 정보 입력이 성공했습니다
+
+-----------------------------
+1.회원정보입력 2.회원정보출력
+-----------------------------
+선택(1~2, 0 quit)?1
+--------------
+회원정보입력
+--------------
+이름: park
+전화번호: 010-5678-5678
+이메일: park@naver.com
+등록일(yyyy-MM-dd): 2017-12-19
+{B01=개발부, B02=마케팅부, B03=총무부}
+부서번호: B02
+회원 정보 입력이 성공했습니다
+
+-----------------------------
+1.회원정보입력 2.회원정보출력
+-----------------------------
+선택(1~2, 0 quit)?2
+------------
+회원정보출력
+------------
+총: 2건
+-----------------------------------------------------
+M001  hong       010-1234-1234   hong@test.com        2017-12-18   개발부
+M002  park       010-5678-5678   park@naver.com       2017-12-19   마케팅부
+
+-----------------------------
+1.회원정보입력 2.회원정보출력
+-----------------------------
+선택(1~2, 0 quit)?0
+프로그램 종료
+
+
+
+
+---------------------------------
+//Dept.java
+package com.test;
+
+import java.util.*;
+
+public class Dept {
+	
+	private static Map<String, String> map = new HashMap<String,String>();
+	
+	static {
+		map.put("B01", "개발부");
+		map.put("B02", "마케팅부");
+		map.put("B03", "총무부");
+	}
+	
+	public static String getValue(String key) {
+		return map.get(key);
+	}
+
+	//"{B01=개발부, B02=마케팅부, B03=총무부}"
+	public static String getList() {
+		return map.toString();
+	}
+	
+}
+
+
+
+//Member.java
+package com.test;
+
+public class Member {
+
+	private String mid, name, phone, email, regDate, deptId;
+
+
+
+	
+}
+
+
+
+
+
+
+
+//MemberDAO.java
+package com.test;
+
+import java.util.*;
+
+public class MemberDAO {
+
+	//컬렉션 저장소 준비
+
+
+	// 회원 정보 입력 메소드
+	public void memberAdd(String name, String phone, String email, String regDate, String deptId) {
+
+
+
+
+	}
+
+	// 회원 정보 출력 메소드
+	public String memberList() {
+
+
+	}
+	
+}
+
+
+
+
+//MemberService.java
+package com.test;
+
+import java.util.*;
+
+public class MemberService {
+
+	//MemberDAO 객체 준비
+
+
+	// 회원 정보 입력 메소드
+	public void memberAdd(Scanner sc) {
+
+
+	}
+
+	// 회원 정보 출력 메소드
+	public void memberList() {
+
+
+
+	}
+
+}
+
+
+
+
+
+//Main.java
+package com.test;
+
+import java.util.*;
+
+public class Main {
+
+	public static void main(String[] args) {
+
+
+
+	}
+
+}
+
+
+
+------------------------------------
+

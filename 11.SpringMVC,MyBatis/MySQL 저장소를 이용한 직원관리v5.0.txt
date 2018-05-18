@@ -1,0 +1,137 @@
+--------------------------------------
+직원 관리 v5.0 (STS + SpringMVC + MyBatis)
+
+
+
+1. 기능 구현
+- 직원 정보에 대한 입력, (정렬)출력 기능, 검색 기능, 삭제 기능 구현
+- 직원 정보 입력 항목은 이름, 주민번호, 입사일, 전화번호, 지역번호, 부서번호, 직위번호, 기본급, 수당으로 구성
+- 직원 정보 출력 항목은 사번, 이름, 주민번호, 입사일, 전화번호, 지역명, 부서명, 직위명, 기본급, 수당, 급여로 구성
+- 기초 정보(지역, 부서, 직위) 관리 기능 구현
+- 관리자 로그인 기능 구현
+- 직원 정보에서 사진 업로드, 사진 출력 기능 구현
+
+
+-------------------------------------------------------
+2. 화면 구성
+- 이미지 참조
+
+
+
+
+--------------------------------------------------------------------------
+3. 데이터베이스 구성
+
+CREATE TABLE regions (
+    reg_id VARCHAR(5)   #PK (REG01, REG02, ... )
+    ,reg_name  VARCHAR(10)
+);
+
+INSERT INTO regions (reg_id, reg_name) VALUES ('REG01', '서울');
+INSERT INTO regions (reg_id, reg_name) VALUES ('REG02', '경기');
+INSERT INTO regions (reg_id, reg_name) VALUES ('REG03', '인천');
+
+CREATE TABLE departments (
+    dept_id VARCHAR(6)   #PK (DEPT01, DEPT02, ... )
+    ,dept_name  VARCHAR(15) NOT NULL
+);
+
+INSERT INTO departments (dept_id ,dept_name ) VALUES ('DEPT01', '개발부');
+INSERT INTO departments (dept_id ,dept_name ) VALUES ('DEPT02', '마케팅부');
+
+
+CREATE TABLE jobs (
+    job_id VARCHAR(5)   #PK (JOB01, JOB02, ... )
+    ,job_title  VARCHAR(15) NOT NULL
+    , minBasicPay INT
+);
+
+
+INSERT INTO jobs (job_id ,job_title ) VALUES ('JOB01', '사원', 200000);
+INSERT INTO jobs (job_id ,job_title ) VALUES ('JOB02', '과장', 300000);
+
+
+CREATE TABLE employees (
+        eid VARCHAR(5) #PK (E0001, E0002, ... )
+       ,name_ VARCHAR(20) NOT NULL
+       ,ssn  VARCHAR(7) NOT NULL
+       ,hiredate DATE     NOT NULL
+       ,phone   VARCHAR(15)
+       ,reg_id  VARCHAR(10) #FK
+       ,dept_id VARCHAR(15) #FK
+       ,job_id VARCHAR(15) #FK
+       ,basicpay INT NOT NULL
+       ,extrapay INT NOT NULL
+);
+
+INSERT INTO employees (eid, name_, ssn, hiredate, phone, reg_id, dept_id, job_id, basicpay, extrapay) 
+	VALUES ('E0001', '홍길동', '1234567', '2000-01-01', '010-1234-1234', 'REG01', 'DEPT01', 'JOB01', 2000000, 1000000); 
+
+CREATE VIEW empView AS
+SELECT eid, name_, ssn, hiredate, phone, e.reg_id, reg_name, e.dept_id, dept_name, e.job_id, job_title, basicpay, extrapay, basicpay + extrapay AS pay
+FROM employees e INNER JOIN regions r ON e.reg_id = r.reg_id
+INNER JOIN departments d ON e.dept_id = d.dept_id 
+INNER JOIN jobs j ON e.job_id = j.job_id
+ORDER BY eid;
+
+
+/*
+CREATE TABLE empPictures(
+	pid  VARCHAR(5) #PK (P0001, P0002, ... )
+	, picName VARCHAR(100) NOT NULL
+	, eid VARCHAR(5) #FK
+);
+*/
+
+CREATE TABLE empPictures(
+	eid VARCHAR(5) #PK + FK 
+	, picName VARCHAR(100) NOT NULL
+);
+
+ALTER TABLE empPictures
+	
+	ADD CONSTRAINT empPictures_eid_pk PRIMARY KEY(eid);
+
+ALTER TABLE empPictures
+	
+	ADD CONSTRAINT empPictures_eid_fk 
+		
+	FOREIGN KEY (eid) 
+        
+	REFERENCES employees (eid);
+
+
+CREATE OR REPLACE VIEW  empView AS
+SELECT e.eid AS eid, name_, ssn, hiredate, phone, e.reg_id, reg_name, e.dept_id, dept_name, e.job_id, job_title, basicpay, extrapay, basicpay + extrapay AS pay
+	 ,picName
+FROM employees e INNER JOIN regions r ON e.reg_id = r.reg_id
+INNER JOIN departments d ON e.dept_id = d.dept_id 
+INNER JOIN jobs j ON e.job_id = j.job_id
+LEFT OUTER JOIN empPictures p ON e.eid = p.eid
+ORDER BY eid;
+
+
+
+
+CREATE TABLE login (
+	id_ VARCHAR(20) #PK
+	, pw_ VARCHAR(20)
+	, grade TINYINT #0(관리자), 1(강사), 2(수강생, 기본값)
+);
+
+
+-----------------------------------------------
+4. 작성 순서
+1) 요구분석 결과에 따른 화면설계(MockUp, 웹디자인)
+2) 데이터베이스에서 테이블 및 초기 자료 준비
+3) 화면설계에 따른 쿼리 준비 -> INSERT, SELECT
+4) 자료형 클래스 선언
+5) DAO 클래스 선언 및 저장소 준비, 초기 자료 준비
+6) DAO 클래스 전체 출력 메소드 작성
+7) Test 클래스에서 전체 출력 메소드 테스트
+8) 화면 설계에 따른 액션 클래스 작성
+9) 전체 출력 메소드 연결
+10) 입력 기능 추가
+
+
+

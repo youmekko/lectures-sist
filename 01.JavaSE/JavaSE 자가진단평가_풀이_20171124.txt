@@ -1,0 +1,401 @@
+주의)
+메모장에 문제 복사한 후 풀이 작성하고 제출.
+제출시 '본인이름_20171124.txt' 파일로 만들고, 첨부 파일로 제출.
+제출은 각 팀별 파일서버 '자가진단평가' 폴더에 저장.
+
+
+
+--------------
+문제1) 객체지향프로그래밍에서 객체(Object)의 의미를 설명.
+
+- 실세계에 존재하는 모든 대상을 Object(객체)로 표현. 
+- Object(객체)에 대한 물리적 표현은 클래스(class)
+- Object로 표현할 대상의 state, behavior 분석 -> fields, methods로 대체 표현.
+- state는 객체의 상태(명사적 특성). 예를들어, 강아지의 이름, 색상
+- behavior는 객체의 행동(동사적 특성). 예를 들어, 강아지의 짓는 행위, 먹는 행위, 뛰는 행위.
+- 클래스 선언 기본 형식
+public class 클래스이름 {
+	//하위 멤버(필드-멤버변수, 메소드) 구성
+}
+- 물리적으로 .java 파일로 저장
+
+
+
+
+---------------------------------
+문제2) '보드마카'를 클래스로 정의한 예제 코드 작성. 클래스명은 BoardMarker로 작성하고, state, behavior 분석 결과를 클래스로 표현.
+
+package com.test;
+
+//보드마카에 대한 객체 분석 및 클래스 표현
+public class BoardMarker {
+	
+	//보드마카에 대한 객체 분석
+	//state - color(색상)
+	//behavior - writing(쓰기)
+	//-> fields, methods로 표현
+	
+	//field 선언
+	//객체의 상태 정보 저장
+	//자동 초기화 지원 -> null
+	private String color;
+	
+	//constructor 선언
+	//객체 생성시 field에 대한 초기화 역할
+	public BoardMarker() {
+	}
+	public BoardMarker(String color) {
+		this.color = color;
+	}
+	
+	//method 선언
+	//객체의 행위 특성에 대한 코드 표현
+	//매개변수 추가
+	//->외부에서 제공되는 자료 수신
+	public void writing(String msg) {
+		//글쓰기 행위에 대한 코드
+		//가상의 칠판(콘솔)
+		System.out.printf("(%s)%s%n", this.color, msg);
+	}
+
+}
+
+
+
+package com.test;
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+		//BoardMarker 객체 생성
+		BoardMarker m1 = new BoardMarker("black");
+		
+		//가상의 칠판(콘솔)에 보드마카 객체를 이용해서 글쓰기 행위를 한다.
+		m1.writing("Hello, World!");
+		
+	}
+
+}
+
+
+
+
+
+---------------------------------
+문제3) 클래스 선언시 field 정의, 선언 형식 및 역할, 특징 설명 및 예시코드 작성.
+
+- 필드(멤버변수)
+- 객체의 상태 정보 저장용 변수 선언
+- 접근제한자 자료형 변수명;
+- 접근제한자 자료형 변수명 = 초기값;
+- 자동 초기화 지원 -> 객체 생성시(new 연산자) 초기화
+- int형은 0, double형은 0.0, 참조형은 null로 초기화.
+- 접근제한자는 외부에서 멤버 접근할 때 사용. 필드는 private 접근제한자 권장.
+- 접근제한자는 생략 가능.
+
+
+package com.test;
+
+//자동차 클래스 선언
+public class Car {
+	
+	//초기값 설정시 임의의 값 지정 가능
+	String company = "현대자동차";
+	String model = "그랜저";
+	int maxSpeed = 300;
+
+}
+
+
+
+package com.test;
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+		//Car 클래스에 대한 객체 생성
+		Car myCar = new Car();
+		
+		//Car 객체의 멤버(필드) 접근 및 값 출력 -> dot(.) 연산자
+		System.out.println(myCar.company);
+		System.out.println(myCar.model);
+		
+	}
+
+}
+
+
+
+
+
+---------------------------------
+문제4) 클래스 선언시 method 정의, 선언 형식 및 역할, 특징 설명 및 예시코드 작성.
+
+
+-메소드
+-객체(Object)의 행동 특성(behavior)을 선언한 것.
+-예를 들어, 보드마카에서 쓰기 특성을 메소드로 표현.
+-선언 형식
+modifier returnType nameOfMethod (Parameter List) {
+	// method body
+	return 반환값;
+}
+-접근제한자는 외부에서 멤버 접근할 때 사용. 메소드는 public 접근제한자 권장.
+-접근제한자는 생략 가능.
+-반환자료형 부분은 반환값에 대한 자료형 지정. 반환값이 없는 경우 void 키워드 사용.
+-메소드이름은 식별자 작성 규칙을 따른다. 
+-매개변수는 외부에서 전달되는 자료를 수신하는 역할. 생략 가능. local 변수. 자료의 갯수, 자료형에 맞춰서 작성.
+-반환값이 있는 경우 return 구문 사용. 메소드 액션의 가장 마지막에 실행.
+
+
+package com.test;
+
+//계산기 클래스 선언
+public class Calculator {
+	
+	//산술 연산(더하기) 메소드 추가
+	int plus(int x, int y) {
+		int result = x + y;
+		return result;
+	}
+}
+
+
+
+package com.test;
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+		//Calculator 클래스에 대한 객체 생성
+		Calculator c = new Calculator();
+		
+		//Calculator 객체의 plus() 메소드 호출 테스트
+		int x = 10;
+		int y = 20;
+		int result = c.plus(x, y);
+		System.out.println(result); //30
+
+	}
+
+}
+
+
+
+
+---------------------------------
+문제5) 메소드 매개변수 선언시 기본형 자료형(by value)과 참조형 자료형(by reference) 매개변수의 차이 설명 및 예시코드 작성.
+
+
+-매개변수 자료형에 따른 구분
+-기본형(by value)과 참조형(by reference)의 차이
+
+-by value
+-메소드 호출시 매개변수 값을 보내는쪽과 받는 쪽이 서로 독립 상태.
+->값 복사
+->메소드 액션 결과에 대한 return 구문이 필요 하다.
+
+-by reference
+-메소드 호출시 매개변수 값을 보내는쪽과 받는 쪽이 서로 연결 상태.
+->참조주소 복사
+->메소드 액션 결과에 대한 return 구문이 필요 없다.
+
+
+
+package com.test;
+
+
+//매개변수 테스트용 클래스
+public class Sample {
+	
+	//by value
+	void method1(int a) {
+		++a;
+		System.out.printf("inner:%d%n", a);
+	}
+	
+	//by reference
+	void method2(int[] arr) {
+		++arr[0];
+		System.out.printf("inner:%d%n",arr[0]);
+	}
+
+}
+
+
+
+
+package com.test;
+
+import java.util.Arrays;
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+		//by value, by reference 테스트
+		Sample s = new Sample();
+		
+		//by value
+		int a = 10;
+		s.method1(a);
+		System.out.printf("outer:%d%n",a);
+		
+		//by reference
+		int[] arr = {10};
+		s.method2(arr);
+		System.out.printf("outer:%d%n",arr[0]);
+
+	}
+
+}
+
+
+
+
+
+---------------------------------
+문제6) 메소드 오버로딩(overloading)의 정의, 특징 설명 및 예시코드 작성.
+
+
+-메소드 오버로딩(Overloading)
+-클래스 내에 같은 이름을 가진 메소드가 여러개 선언된 상태.
+-같은 이름을 가진 식별자(클래스, 변수, 기타) 여러개가 존재하는 것은 잘못된 표현.
+-메소드 중복 정의 -> 메소드 시그니처(매개변수 구성)가 달라야 한다.
+-액션 구성이 유사한 메소드를 묶어서 하나의 이름으로 표현. 예를 들어, println() 메소드.
+
+
+
+package com.test;
+
+//메소드 오버로딩 테스트 클래스
+public class Sample {
+	
+	//더하기 연산 메소드에 대한 오버로딩 테스트
+	
+	//정수 더하기 연산 메소드 -> int a(int x, int y) -> int add(int x, int y)
+	int add(int x, int y) {
+		return x + y;
+	}
+	
+	//문자열 더하기(결합) 연산 메소드 -> String c(String x, String y) -> String add(String x, String y)
+	String add(String x, String y) {
+		return x + y;
+	}
+
+}
+
+
+
+package com.test;
+
+public class Main {
+
+	public static void main(String[] args) {
+
+		//메소드 오버로딩 테스트
+		
+		//객체 생성
+		Sample s = new Sample();
+		
+		//오버로딩 메소드 호출 
+		System.out.println(s.add(10, 20));
+		System.out.println(s.add("TEST", "HELLO"));
+		
+	}
+
+}
+
+
+
+
+
+---------------------------------
+문제7) 개인정보(이름, 전화번호, 이메일)를 클래스(Member)로 표현하고, 여러명의 개인 정보 객체를 (배열)저장소에 저장하고, 출력하는 코드 작성. Member클래스와 Main 클래스 별도 작성.
+출력예)
+----------
+회원 명단
+----------
+홍길동        1234       hong@naver.com
+박길동        5678       park@naver.com
+
+
+
+package com.test;
+
+public class Member {
+	
+	private String name;
+	private String phone;
+	private String email;
+	
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getPhone() {
+		return phone;
+	}
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	
+	//개인정보 전체 출력 전용 메소드 추가
+	public String memberInfo() {
+		return String.format("%-10s %-10s %-10s", this.name, this.phone, this.email);
+	}
+
+}
+
+
+
+
+package com.test;
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+		//객체 저장소 준비
+		Member[] m = new Member[5];
+		
+		
+		//홍길동 정보 저장용 Member 클래스 객체(instance) 생성
+		Member m1 = new Member();
+		m1.setName("홍길동");
+		m1.setPhone("1234");
+		m1.setEmail("hong@naver.com");
+		
+		//박길동 정보 저장용 Member 클래스 객체(instance) 생성
+		Member m2 = new Member();
+		m2.setName("박길동");
+		m2.setPhone("5678");
+		m2.setEmail("park@naver.com");
+		
+		//Member 객체들을 배열에 저장
+		m[0] = m1;
+		m[1] = m2;
+
+		System.out.println("----------");
+		System.out.println("회원 명단");
+		System.out.println("----------");
+		for (Member temp : m) {
+			if (temp == null) continue;
+			System.out.println(temp.memberInfo());
+		}
+		
+	}
+
+}
+

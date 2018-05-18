@@ -1,0 +1,1897 @@
+-----------------------------------
+QABoard v1.0 (Servlet MVC Pattern)
+
+1. 요구분석
+
+1) QA게시판 액션 분석
+- 로그인 과정 없이 문의 게시판 글쓰기 가능.
+- 글쓰기 과정에서 비밀글 선택 가능.
+- 글 목록 출력. 페이징 처리.
+- 글 내용보기.
+- 비밀글 내용보기(Ajax).
+- 답변 보기.
+- 관리자 로그인 처리.
+- 관리자 답변쓰기.
+- 관리자 블라인드 처리.
+
+2) 회원 가입
+- 프로젝트와 연동
+
+3) 과정 소개
+- 프로젝트와 연동
+
+
+
+
+
+2. 데이터베이스(MySQL 기준) 구성
+
+
+--QABoard 테이블 설계
+--항목 추출-> 번호, 제목, 내용, 비밀글, 작성일, 블라인드, ClientIP, 답변(자식글), 패스워드
+--테이블 추출->QABoard 테이블(PK), 답변글 테이블(FK), 패스워드테이블(FK)
+
+CREATE TABLE QABoardTable (
+	qid VARCHAR(4) /* Q001 형태 */
+	, title VARCHAR(100)
+	, content VARCHAR(1000)
+	, writeday DATE
+	, clientip VARCHAR(15)
+	, blind int /* 기본값 0, 블라인드 1 */
+	, privacy int /* 기본값 0, 비밀글 1 */
+);
+
+
+CREATE TABLE QABoardReplyTable (
+	qid VARCHAR(4)   /* PK and FK */
+	, replyContent VARCHAR(1000)
+);
+
+
+CREATE TABLE QABoardPasswordTable (
+	qid VARCHAR(4)   /* PK and FK */
+	, pw VARCHAR(30)
+);
+
+
+ALTER TABLE QABoardTable
+   ADD CONSTRAINT QABoardTable_qid_pk PRIMARY KEY(qid);
+   
+ALTER TABLE QABoardReplyTable
+   ADD CONSTRAINT QABoardReplyTable_qid_pk  PRIMARY KEY(qid);
+   
+ALTER TABLE QABoardPasswordTable
+   ADD CONSTRAINT QABoardPasswordTable_qid_pk  PRIMARY KEY(qid);  
+   
+ALTER TABLE QABoardReplyTable
+   ADD CONSTRAINT QABoardReplyTable_qid_fk FOREIGN KEY (qid)
+         REFERENCES QABoardTable (qid);
+         
+ALTER TABLE QABoardPasswordTable
+   ADD CONSTRAINT QABoardPasswordTable_qid_fk FOREIGN KEY (qid)
+         REFERENCES QABoardTable (qid);
+         
+INSERT INTO QABoardTable (qid, title, content, writeday, clientip, blind, privacy)
+	VALUES ((SELECT * FROM (SELECT CONCAT('Q', LPAD(IFNULL(SUBSTRING(MAX(qid), 2), 0) + 1, 3, 0)) AS newQid FROM QABoardTable) q), '문의게시판이 오픈되었습니다.', '회원 가입 없이 자유롭게 글을 쓸 수 있습니다.\r\n 빠른 답변을 달 수 있도록 하겠습니다.\r\n - 관리자 - ', NOW(), '127.0.0.1', 0, 0);
+    
+SELECT qid, title, content, writeday, clientip, blind, privacy 
+	FROM QABoardTable;
+
+SELECT CONCAT('Q', LPAD(IFNULL(SUBSTRING(MAX(qid), 2), 0) + 1, 3, 0)) AS qid 
+	FROM QABoardTable;
+
+
+SELECT qid, title, content, writeday, clientip, blind, privacy
+	
+	, (SELECT replyContent FROM qaboardreplytable WHERE qid=qa.qid) AS replyContent
+	FROM QABoardTable qa
+	WHERE blind=0
+	ORDER BY qid DESC;
+
+
+
+
+
+--문의게시판 목록 출력 쿼리
+--1) 날짜 출력시 오늘이면 '시간:분' 형태로 출력하고, 오늘이 아니면 '년-월-일' 형태로 출력되도록 한다.
+--2) 일반사용자 화면에서는 블라인드 처리된 게시물을 볼 수 없어야 한다.
+--3) 최근 게시물이 먼저 출력되도록 설정한다.
+--4) 페이징 처리를 이용해서 특정 페이지 게시물만 나타나도록 한다.
+--5) 현재 게시물이 답변이 존재하는지 확인하는 컬럼 추가
+
+
+--문의게시판 답변글 입력 쿼리 준비
+
+
+--문의게시판 답변글 출력 쿼리 준비
+
+
+--문의게시판 목록 출력에 대한 페이지 처리
+
+
+--문의게시판 패스워드 검사, 글번호 기준 글내용 출력 쿼리
+SELECT qid, pw, content
+ FROM QABoardTable INNER JOIN QABoardPasswordTable
+ USING(qid)
+WHERE qid='Q004' AND pw='1234';
+
+
+--문의게시판에 입력할 최신 글번호 획득 쿼리
+
+
+--문의게시판 글 입력 쿼리
+
+
+--패스워드게시판 패스워드 입력 쿼리 (글번호는 기존 글번호)
+
+
+--답변게시판(qaboardreplytable)에 답변글 입력 쿼리
+
+
+--문의게시판의 블라인드 처리(1)/해제(0) 쿼리
+
+
+--문의게시판에서 패스워드가 맞으면 글내용 반환하는 쿼리
+
+
+--특정 범위의 로우 읽어오는 쿼리
+
+
+--로그인/로그아웃 액션 처리를 위한 테이블 생성
+CREATE TABLE login(
+	id_ VARCHAR(50)
+	,pw_ VARCHAR(50)
+	, grade INT /* 관리자 0, 일반사용자 1 */
+);
+
+ALTER TABLE login
+	ADD CONSTRAINT login_id_grade_pk PRIMARY KEY (id_, grade);
+
+INSERT INTO login (id_, pw_, grade) VALUES ('admin', '1234', 0);
+
+SELECT id_, pw_, grade FROM login WHERE id_='admin' AND pw_='1234' AND grade=0;
+
+
+
+
+3. 리소스 목록
+
+
+
+4. 라이브러리 목록
+
+
+
+5. 프로그램 목록
+
+
+
+6. 화면 구성
+
+----------------------------------------------
+//sistmain.jsp (화면설계 코드)
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<title>SIST_쌍용교육센터</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<script
+	src="${pageContext.request.contextPath}/resources/script/util.js"></script>
+
+<script src="https://maps.googleapis.com/maps/api/js"></script>
+
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+
+<style>
+div#input:hover, div#output:hover {
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0
+		rgba(0, 0, 0, 0.19);
+}
+</style>
+<script>
+	$(document).ready(function() {
+
+	});
+</script>
+
+
+<script>
+	var position01 = new google.maps.LatLng(37.500197, 127.033471);
+	var position02 = new google.maps.LatLng(37.499362, 127.033202);
+
+	function myMap() {
+
+		//구글 맵 정보 설정
+		var mapProp = {
+			center : position01,
+			zoom : 17,
+			mapTypeId : google.maps.MapTypeId.ROADMAP
+		};
+		var map = new google.maps.Map(document.getElementById("googleMap"),
+				mapProp);
+
+		//마커 정보 설정
+		var marker = new google.maps.Marker({
+			position : position02,
+		});
+		marker.setMap(map);
+
+		//윈포윈도우 설정
+		var infowindow = new google.maps.InfoWindow(
+				{
+					content : "한독약품빌딩<br>서울특별시 강남구 역삼1동 735<br><img src=\"${pageContext.request.contextPath}/resources/img/handok_small.png\">"
+				});
+		google.maps.event.addListener(marker, 'click', function() {
+			infowindow.open(map, marker);
+		});
+
+	}
+</script>
+
+
+</head>
+<body>
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header" style="padding: 10px;">
+				<a href="${pageContext.request.contextPath}/sist/main"><img
+					src="${pageContext.request.contextPath}/resources/img/sist_logo.png"
+					alt="sist_logo.png" style="vertical-align: bottom;"></a>
+			</div>
+			<div>
+				<ul class="nav navbar-nav">
+					<li class="active"><a
+						href="${pageContext.request.contextPath}/sist/main">Home</a></li>
+					<li><a href="${pageContext.request.contextPath}/sist/intro">센터소개</a></li>
+					<li><a
+						href="${pageContext.request.contextPath}/sist/education">교육과정
+							소개</a></li>
+					<li><a href="${pageContext.request.contextPath}/qaboard/list">문의게시판</a></li>
+					<li><a href="#" data-toggle="modal"
+						data-target="#myLoginFormModal">회원가입/로그인</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container">
+		<div class="panel-group">
+			<div class="panel panel-primary" id="output">
+				<div class="panel-heading">
+					강남캠퍼스 02-3482-4632 서울특별시 강남구 테헤란로 132 (역삼동) 한독약품빌딩 8층
+					<button type="button" class="btn btn-default btn-xs btnMap"
+						id="map">Map</button>
+				</div>
+				<div class="panel-body">
+
+					<table class="table">
+						<thead>
+							<tr>
+								<th>번호</th>
+								<th>구분</th>
+								<th>과정명</th>
+								<th>교육기간</th>
+								<th>교육시간</th>
+								<th>교육비용</th>
+								<th>정원</th>
+								<th>과정신청/<br>상세보기
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>155</td>
+								<td>정부지원</td>
+								<td>웹프로그래머 취업 전문 과정<br> <span
+									class="text-danger small">(매월 316,000원 수당 지급)</span></td>
+								<td>2018.01.10~2018.05.24</td>
+								<td>09:00~18:00</td>
+								<td><span class="text-danger">전액 무료</span></td>
+								<td>25명</td>
+								<td><button type="button" class="btn btn-default btn-xs">상세보기</button></td>
+							</tr>
+							<tr>
+								<td>154</td>
+								<td>정부지원</td>
+								<td>사물인터넷 기술 구현 과정</td>
+								<td>2018.02.16~2018.04.13</td>
+								<td>09:00~18:00</td>
+								<td><span class="text-danger">전액 무료</span></td>
+								<td>25명</td>
+								<td><button type="button" class="btn btn-default btn-xs">상세보기</button></td>
+							</tr>
+							<tr>
+								<td>153</td>
+								<td>주말과정</td>
+								<td>개발자를 위한 Java Programming</td>
+								<td>2018.02.7, 14, 21, 28, 03.5</td>
+								<td>10:00~18:00</td>
+								<td>263,480원<br> <span class="text-danger small">(재직자
+										환급 210,784원)</span></td>
+								<td>20명</td>
+								<td><button type="button" class="btn btn-default btn-xs">상세보기</button></td>
+							</tr>
+							<tr>
+								<td>152</td>
+								<td>주말과정</td>
+								<td>빅데이터 설계 및 분석 과정</td>
+								<td>2018.03.7, 14, 21, 28, 04.5</td>
+								<td>10:00~18:00</td>
+								<td>230,090원<br> <span class="text-danger small">(재직자
+										환급 184,072원)</span></td>
+								<td>20명</td>
+								<td><button type="button" class="btn btn-default btn-xs">상세보기</button></td>
+							</tr>
+							<tr>
+								<td>151</td>
+								<td>주말과정</td>
+								<td>실무 중심의 Oracle SQL &amp; PL/SQL</td>
+								<td>2018.03.7, 14, 21, 28, 04.5</td>
+								<td>10:00~18:00</td>
+								<td>263,480원<br> <span class="text-danger small">(재직자
+										환급 210,784원)</span></td>
+								<td>20명</td>
+								<td><button type="button" class="btn btn-default btn-xs">상세보기</button></td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+			</div>
+
+			<div class="panel panel-default" id="output">
+				<div class="panel-heading">공지사항</div>
+				<div class="panel-body">
+
+					<table class="table">
+						<thead>
+							<tr>
+								<th>번호</th>
+								<th style="width: 70%;">제목</th>
+								<th>작성일</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>114</td>
+								<td><a href="#demo137" data-toggle="collapse">Framework를
+										활용한 빅데이터 개발자 과정 수료 안내</a>
+									<div id="demo137" class="collapse"
+										style="width: 80%; margin: 10px;">
+										<p>
+											당 교육센터에서는 Framwork를 활용한 빅데이터 개발자 과정이 수료함 알려드립니다.<br>
+											교육장소 : 강남교육센터<br> 교육일정 : 2017.06.3~2017.12.03 매주
+											월~금(09:00~18:00)<br>
+										</p>
+									</div></td>
+								<td>2017-11-03</td>
+							</tr>
+							<tr>
+								<td>113</td>
+								<td><a href="#demo136" data-toggle="collapse">2018년
+										정부지원 무료 교육 안내</a>
+									<div id="demo136" class="collapse"
+										style="width: 80%; margin: 10px;">
+										<p>
+											당 교육센터에서는 고용노동부와 한국산업인력공단 주관으로 국가기간전략산업직종훈련 교육생을 아래와 같이
+											모집합니다.<br> 교육장소 : 강남교육센터 , 강북교육센터<br> 교육일정 : 총
+											5.5~6개월 매주 월~금(09:00~18:00)<br> 교육대상 : 미취업자 /
+											졸업예정자(2018년 2월 졸업예정자)<br> 교육비용 :국비전액지원(교육비 및 교재비 전액지원)<br>
+											훈련수당 : 월 236,000원~316,000원 지급
+										</p>
+
+									</div></td>
+								<td>2017-10-30</td>
+							</tr>
+						</tbody>
+					</table>
+					<ul class="pager">
+						<li><button type="button" class="btn btn-default btn-sm">Previous</button></li>
+						<li><button type="button" class="btn btn-default btn-sm">Next</button></li>
+					</ul>
+
+				</div>
+			</div>
+
+
+		</div>
+
+
+		<!-- Google Map Modal -->
+		<div id="mapModal" class="modal fade" role="dialog">
+			<div class="modal-dialog">
+
+				<!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Google Map</h4>
+					</div>
+					<div class="modal-body">
+
+						<div id="googleMap"
+							style="width: 550px; height: 380px; margin: auto;"></div>
+
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default btn-sm"
+							data-dismiss="modal">Close</button>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<!-- Modal -->
+		<div id="myLoginFormModal" class="modal fade" role="dialog">
+
+			<div class="modal-dialog">
+
+				<!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header" style="padding: 35px 50px;">
+						<h4>
+							<span class="glyphicon glyphicon-lock"></span> 로그인
+						</h4>
+						<label>정상적인 서비스 사용을 위해서 로그인해야 합니다.</label>
+					</div>
+					<div class="modal-body" style="padding: 40px 50px;">
+						<form role="form" method="post"
+							action="${pageContext.request.contextPath}/login/login">
+							<div class="form-group">
+								<label for="id"> ID :</label> <input type="text"
+									class="form-control" id="id_" name="id_" placeholder="Enter ID"
+									required="required">
+							</div>
+							<div class="form-group">
+								<label for="pw"> Password :</label> <input type="password"
+									class="form-control" id="pw" name="pw"
+									placeholder="Enter Password" required="required">
+							</div>
+							<button type="submit" class="btn btn-default btn-block">
+								Login</button>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default btn-sm"
+							id="memberInsertForm">회원가입</button>
+						<button type="button" class="btn btn-default btn-sm"
+							data-dismiss="modal">Close</button>
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+
+	</div>
+
+	<footer class="container-fluid bg-4 text-center">
+		<p>www.sist.co.kr 쌍용교육센터 since 1985</p>
+	</footer>
+</body>
+</html>
+
+
+
+
+
+-------------------------------------------
+//sistintro.jsp (화면설계 코드)
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>SIST_쌍용교육센터</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<script
+	src="${pageContext.request.contextPath}/resources/script/util.js"></script>
+
+<script src="https://maps.googleapis.com/maps/api/js"></script>
+
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<style>
+div#input:hover, div#output:hover {
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0
+		rgba(0, 0, 0, 0.19);
+}
+</style>
+<script>
+	$(document).ready(function() {
+
+	});
+</script>
+
+<script>
+	var position01 = new google.maps.LatLng(37.500197, 127.033471);
+	var position02 = new google.maps.LatLng(37.499362, 127.033202);
+
+	function myMap() {
+
+		//구글 맵 정보 설정
+		var mapProp = {
+			center : position01,
+			zoom : 17,
+			mapTypeId : google.maps.MapTypeId.ROADMAP
+		};
+		var map = new google.maps.Map(document.getElementById("googleMap"),
+				mapProp);
+
+		//마커 정보 설정
+		var marker = new google.maps.Marker({
+			position : position02,
+		});
+		marker.setMap(map);
+
+		//윈포윈도우 설정
+		var infowindow = new google.maps.InfoWindow(
+				{
+					content : "한독약품빌딩<br>서울특별시 강남구 역삼1동 735<br><img src=\"${pageContext.request.contextPath}/resources/img/handok_small.png\">"
+				});
+		google.maps.event.addListener(marker, 'click', function() {
+			infowindow.open(map, marker);
+		});
+
+	}
+</script>
+
+
+</head>
+<body>
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header" style="padding: 10px;">
+				<a href="${pageContext.request.contextPath}/sist/main"><img
+					src="${pageContext.request.contextPath}/resources/img/sist_logo.png"
+					alt="sist_logo.png" style="vertical-align: bottom;"></a>
+			</div>
+			<div>
+				<ul class="nav navbar-nav">
+					<li><a href="${pageContext.request.contextPath}/sist/main">Home</a></li>
+					<li class="active"><a
+						href="${pageContext.request.contextPath}/sist/intro">센터소개</a></li>
+					<li><a
+						href="${pageContext.request.contextPath}/sist/education">교육과정
+							소개</a></li>
+					<li><a href="${pageContext.request.contextPath}/qaboard/list">문의게시판</a></li>
+					<li><a href="#" data-toggle="modal"
+						data-target="#myLoginFormModal">회원가입/로그인</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container">
+		<div class="panel-group">
+
+			<div class="panel panel-default" id="output">
+				<div class="panel-heading">Vision</div>
+				<div class="panel-body">
+					<p style="text-align: center;">
+						<img
+							src="${pageContext.request.contextPath}/resources/pictures/sist_vision.png">
+					</p>
+				</div>
+			</div>
+
+			<div class="panel panel-default" id="output">
+				<div class="panel-heading">History</div>
+				<div class="panel-body">
+					<p style="text-align: center;">
+						<img
+							src="${pageContext.request.contextPath}/resources/pictures/sist_history.png">
+					</p>
+				</div>
+			</div>
+
+			<div class="panel panel-default" id="output">
+				<div class="panel-heading">Computer</div>
+				<div class="panel-body">
+					<p style="text-align: center;">
+						<img
+							src="${pageContext.request.contextPath}/resources/pictures/sist_com.png">
+					</p>
+				</div>
+			</div>
+
+			<div class="panel panel-default" id="output">
+				<div class="panel-heading">Location</div>
+				<div class="panel-body">
+					<div id="googleMap"
+						style="width: 100%; height: 350px; margin: auto;"></div>
+
+				</div>
+			</div>
+
+		</div>
+
+
+
+		<!-- Modal -->
+		<div id="myLoginFormModal" class="modal fade" role="dialog">
+
+			<div class="modal-dialog">
+
+				<!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header" style="padding: 35px 50px;">
+						<h4>
+							<span class="glyphicon glyphicon-lock"></span> 로그인
+						</h4>
+						<label>정상적인 서비스 사용을 위해서 로그인해야 합니다.</label>
+					</div>
+					<div class="modal-body" style="padding: 40px 50px;">
+						<form role="form" method="post"
+							action="${pageContext.request.contextPath}/login/login">
+							<div class="form-group">
+								<label for="id"> ID :</label> <input type="text"
+									class="form-control" id="id_" name="id_" placeholder="Enter ID"
+									required="required">
+							</div>
+							<div class="form-group">
+								<label for="pw"> Password :</label> <input type="password"
+									class="form-control" id="pw" name="pw"
+									placeholder="Enter Password" required="required">
+							</div>
+							<button type="submit" class="btn btn-default btn-block">
+								Login</button>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default btn-sm"
+							id="memberInsertForm">회원가입</button>
+						<button type="button" class="btn btn-default btn-sm"
+							data-dismiss="modal">Close</button>
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+
+	</div>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+------------------------------------------
+//sisteducation.jsp (화면설계 코드)
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>SIST_쌍용교육센터</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<script src="${pageContext.request.contextPath}/resources/script/util.js"></script>
+
+<script src="https://maps.googleapis.com/maps/api/js"></script>
+
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<style>
+div#input:hover, div#output:hover {
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0
+		rgba(0, 0, 0, 0.19);
+}
+</style>
+
+<script>
+	$(document).ready(function() {
+
+
+	});
+
+	function initialize() {
+		//한독약품빌딩
+		//서울특별시 강남구 역삼1동 735
+		//37.499362, 127.033202
+		var myCenter = new google.maps.LatLng(37.499362, 127.033202);
+		var mapProp = {
+			center : myCenter,
+			zoom : 16,
+			mapTypeId : google.maps.MapTypeId.ROADMAP
+		};
+
+		var map = new google.maps.Map(document.getElementById("googleMap"),
+				mapProp);
+
+		var marker = new google.maps.Marker({
+			position : myCenter,
+		});
+
+		marker.setMap(map);
+	}
+</script>
+
+</head>
+<body>
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header" style="padding:10px;">
+				<a href="${pageContext.request.contextPath}/sist/main"><img src="${pageContext.request.contextPath}/resources/img/sist_logo.png" alt="sist_logo.png" style="vertical-align: bottom;"></a>
+			</div>
+			<div>
+				<ul class="nav navbar-nav">
+					<li><a
+						href="${pageContext.request.contextPath}/sist/main">Home</a></li>
+					<li><a
+						href="${pageContext.request.contextPath}/sist/intro">센터소개</a></li>
+					<li class="active"><a
+						href="${pageContext.request.contextPath}/sist/education">교육과정
+							소개</a></li>
+					<li><a
+						href="${pageContext.request.contextPath}/qaboard/list">문의게시판</a></li>
+					<li><a href="#" data-toggle="modal"
+						data-target="#myLoginFormModal">회원가입/로그인</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container">
+		<div class="panel-group">
+
+			<div class="panel panel-default" id="output">
+				<div class="panel-heading">교육개요</div>
+				<div class="panel-body">
+					<p>IT는 거의 모든 산업 분야에서 연관 되어져 있으며 앞으로도 지속적으로 발전 가능성이 많은 분야입니다. 국내
+						IT 서비스 시장은 지속적으로 성장을 하고 있으며, IT 서비스 산업 자체의 변화 등 다양한 시장 환경 변화 움직임
+						속에 신규 사업 발굴 작업이 지속되고, 시작 경쟁 구도의 변화 움직임이 확대될 전망입니다.</p>
+					<p>그에 따른 전문인력 수급이 현저히 부족한 상황이고, 구직자들의 수준은 기업에서 요구하는 직무 능력에 충족이
+						되지 못하고 있는 상황입니다. 청년층의 첫 일자리 전공 불일치 비율이 80%에 달하고, 기업에서는 신입 사원을
+						재교육하는데 드는 비용이 크기 때문에 사전에 전문 교육을 이수한 구직자를 선호하고 있습니다.</p>
+					<p>국가직무능력표준(NCS) 기반 채용 확대가 이어질 전망이며, 성공적인 IT 취업을 위해서는 이제 자격증만이
+						아닌 자신의 직무능력 전문성을 길러야 하는 시대입니다.</p>
+					<p>
+						<span class="text-primary">교육센터에서 진행하는 과정들은 실무 중심의 이론과 실습을
+							병행하는 최적의 과정입니다.</span>
+					</p>
+				</div>
+			</div>
+
+			<div class="panel panel-default" id="output">
+				<div class="panel-heading">교육대상</div>
+				<div class="panel-body">
+					<ul>
+						<li>실업자/미취업자</li>
+						<li>고등학교 3학년 재학 중인 사람으로서 대학교(전문대학)에 진학하지 아니할 것으로 예정된 사람</li>
+						<li>대학교(전문대학)의 최종 학년에 재학중인 사람. 내년도 2월/8월 졸업예정자 가능.</li>
+						<li>IT관련학과 우대 (컴퓨터공학, 정보통신 등)</li>
+						<li>IT분야 신규 취업 또는 전직 희망자</li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="panel panel-default" id="output">
+				<div class="panel-heading">교육목표</div>
+				<div class="panel-body">
+					<ul>
+						<li>다양한 프로그래밍 언어와 데이터베이스 활용 능력 배양</li>
+						<li>현장에서 활용 가능한 기술 교육에 대한 필요성과 인력 수요를 충족할 수 있는 중급자 수준의 인력 양성</li>
+						<li>축적된 정형화/비정형화된 데이터를 분석하여 정보를 다룰 수 있는 정보제공 서비스의 개발 및 운영이
+							가능한 전문 인력 양성</li>
+						<li>실무 프로젝트를 통해서 실제 현업에서 요구하는 개발 능력을 갖춘 현장 적합 인력 양성</li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="panel panel-default" id="output">
+				<div class="panel-heading">커리큘럼</div>
+				<div class="panel-body">
+					<p style="text-align: center;">
+						<img src="${pageContext.request.contextPath}/resources/pictures/sist_curr.png" style="width:100%;">
+					</p>
+
+					<p style="text-align: center;">이외에도 과정별로 다양한 과목들이 진행됩니다.</p>
+				</div>
+			</div>
+
+			<div class="panel panel-default" id="output">
+				<div class="panel-heading">특장점</div>
+				<div class="panel-body">
+					<p style="text-align: center;">
+						<img src="${pageContext.request.contextPath}/resources/pictures/sist_profile.png" style="width:80%;">
+					</p>
+				</div>
+			</div>
+			<div class="panel panel-default" id="output">
+				<div class="panel-heading">상담예약</div>
+				<div class="panel-body">
+					<p>과정 문의 상담은 유선 02-3482-4632 / 카톡 OOOOOO / 문자 010-OOOO-OOOO 등으로
+						연락 바랍니다.</p>
+					<p>방문 상담 환영합니다. 매니저 장OO.</p>
+
+				</div>
+			</div>
+
+
+			<!-- Modal -->
+			<div id="myLoginFormModal" class="modal fade" role="dialog">
+
+				<div class="modal-dialog">
+
+					<!-- Modal content-->
+					<div class="modal-content">
+						<div class="modal-header" style="padding: 35px 50px;">
+							<h4>
+								<span class="glyphicon glyphicon-lock"></span> 로그인
+							</h4>
+							<label>정상적인 서비스 사용을 위해서 로그인해야 합니다.</label>
+						</div>
+						<div class="modal-body" style="padding: 40px 50px;">
+							<form role="form" method="post" action="${pageContext.request.contextPath}/login/login">
+								<div class="form-group">
+									<label for="id"> ID :</label> <input type="text"
+										class="form-control" id="id_" name="id_" placeholder="Enter ID"
+										required="required">
+								</div>
+								<div class="form-group">
+									<label for="pw"> Password :</label> <input type="password"
+										class="form-control" id="pw" name="pw"
+										placeholder="Enter Password" required="required">
+								</div>
+								<button type="submit" class="btn btn-default btn-block">
+									Login</button>
+							</form>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default btn-sm"
+								id="memberInsertForm">회원가입</button>
+							<button type="button" class="btn btn-default btn-sm"
+								data-dismiss="modal">Close</button>
+						</div>
+					</div>
+
+				</div>
+
+			</div>
+
+		</div>
+	</div>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------
+//qaboardlist.jsp (화면설계 코드)
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>SIST_쌍용교육센터</title>
+
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<script
+	src="${pageContext.request.contextPath}/resources/script/util.js"></script>
+
+<script src="https://maps.googleapis.com/maps/api/js"></script>
+
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<style>
+div#input:hover, div#output:hover {
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0
+		rgba(0, 0, 0, 0.19);
+}
+</style>
+
+<script>
+	$(document).ready(function() {
+
+	});
+</script>
+</head>
+<body>
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header" style="padding: 10px;">
+				<a href="${pageContext.request.contextPath}/sist/main"><img
+					src="${pageContext.request.contextPath}/resources/img/sist_logo.png"
+					alt="sist_logo.png" style="vertical-align: bottom;"></a>
+			</div>
+			<div>
+				<ul class="nav navbar-nav">
+					<li><a href="${pageContext.request.contextPath}/sist/main">Home</a></li>
+					<li><a href="${pageContext.request.contextPath}/sist/intro">센터소개</a></li>
+					<li><a
+						href="${pageContext.request.contextPath}/sist/education">교육과정
+							소개</a></li>
+					<li class="active"><a
+						href="${pageContext.request.contextPath}/qaboard/list">문의게시판</a></li>
+					<li><a href="#" data-toggle="modal"
+						data-target="#myLoginFormModal">회원가입/로그인</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container">
+		<div class="panel-group">
+
+			<div class="panel panel-default" id="output">
+				<div class="panel-heading">
+					교육 과정 및 교육원 관련 문의
+					<button type="button" class="btn btn-default btn-xs"
+						id="QBBoardInsert" data-toggle="tooltip" data-placement="top"
+						title="로그인 과정 없이 글쓰기가 가능합니다.">글쓰기</button>
+				</div>
+				<div class="panel-body">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>번호</th>
+								<th style="width: 70%">제목</th>
+								<th>작성일</th>
+								<th>답변보기</th>
+							</tr>
+						</thead>
+						<tbody>
+
+							<tr>
+								<td>137</td>
+								<td><a href="#demo137" data-toggle="collapse"
+									data-target="#demo137">연수신청문의</a><span
+									class="text-danger small">(비밀글)</span>
+									<div id="demo137" class="collapse"
+										style="width: 80%; margin: 10px;">
+										<form role="form" method="post">
+											<div class="form-group">
+												<input type="password" class="form-control input-sm" id="pw"
+													name="pw" placeholder="패스워드 (4자리)" maxlength="4"
+													required="required">
+											</div>
+											<button type="submit" class="btn btn-default btn-xs">Submit</button>
+										</form>
+
+									</div></td>
+								<td>2017-11-03</td>
+								<td><button type="button"
+										class="btn btn-default btn-xs btnReply" disabled="disabled">답변보기</button></td>
+							</tr>
+							<tr>
+								<td>136</td>
+								<td><a href="#demo136" data-toggle="collapse">취업 교육 과정
+										문의 드려요</a>
+									<div id="demo136" class="collapse"
+										style="width: 80%; margin: 10px;">
+
+										<p>
+											지금 4년제 대학 3학년2학기에 재학중인 학생입니다.<br> 취업교육과정을 보니 2018년 2월
+											졸업예정자까지만 수강을 할 수 있다고 써있더라구요.<br> 그러면 현재 4학년인 학생들만 수강할 수
+											있는 건가요?<br> 그렇다면 내년(4학년)에 교육을 받는다고 가정할 때<br> 월~금에
+											강의를 한다고 써있는데,<br> 재학중인 상태에서는 교육을 받지 못하고,<br> 휴학을 하고
+											교육을 받아야하는 건가요?<br> 다른 학생들은 어떤 상태(휴학을 한다던지, 막학기를 남겨두고
+											한다던지 등)에서 교육을 받는지 궁금하여 문의글 올립니다.
+										</p>
+									</div></td>
+								<td>2017-11-03</td>
+								<td><button type="button"
+										class="btn btn-default btn-xs btnReply" disabled="disabled">답변보기</button></td>
+							</tr>
+							<tr>
+								<td>135</td>
+								<td><a href="#demo135" data-toggle="collapse">노동부에서 인증을
+										받으려면 얼마나 걸리나요?</a>
+									<div id="demo135" class="collapse"
+										style="width: 80%; margin: 10px;">
+										<p>..</p>
+									</div></td>
+								<td>2017-10-30</td>
+								<td><button type="button"
+										class="btn btn-default btn-xs btnReply" title="관리자 답변"
+										data-toggle="popover" data-placement="left"
+										data-content="안녕하세요? 현재는 노동부에서 상담과 카드발급하는 기간이 4~6주정도 걸린다고 보시면 됩니다. 감사합니다.">답변보기</button></td>
+							</tr>
+							<tr>
+								<td>133</td>
+								<td><a href="#demo133" data-toggle="collapse">12월 17일
+										과정 문의 드립니다.</a>
+									<div id="demo133" class="collapse"
+										style="width: 80%; margin: 10px;">
+										<p>안녕하세요 2018년 2월 졸업예정인 비전공자 학생입니다. 강남센터의12월 17일 개강 예정인
+											Framework을 활용한 빅데이터개발 강좌를 듣고 싶은데요 제가 비전공자이다보니 아무래도 이해하는데
+											전공자보다는 어려울꺼라 생각이 듭니다. 웹프로그래머 과정보다 자바시간이 적고 빅데이터에대한 교육이 있던데
+											이경우라면 웹프로그래밍 과정을 배우는게 나을지 아니면 배우고싶은 빅데이터과정을 배우는것이 더 나을지
+											고민입니다. 어떤과정을 배우는 것이 더 나을까요? 그리고 신청하고 면접이 있는것으로 봐서 혹시 따로 보는 날이
+											있는것인지 내일 배움카드를 발급을 받는데 오래걸린다고해서 그런데 발급이 된후 면접이 가능한건지도
+											문의드리겠습니다. 바쁘신데 확인해주셔서 감사합니다</p>
+									</div></td>
+								<td>2017-10-30</td>
+								<td><button type="button"
+										class="btn btn-default btn-xs btnReply" title="관리자 답변"
+										data-toggle="popover" data-placement="left"
+										data-content="안녕하세요? 교육과정에대한 상세한 문의는 방문이나 유선으로 해주시면 좀 더 상세하게 설명을 들으실 수가 있습니다. 불편하시더라도 유선이나 방문상담을 이용해주시기 바랍니다. 서류접수 후 면접을 보신 후에 최종합격이 되시면 카드발급을 받으시면 됩니다. 감사합니다.">답변보기</button></td>
+							</tr>
+
+
+						</tbody>
+					</table>
+					<ul class="pager">
+						<li><button type="button"
+								class="btn btn-default btn-sm btnPrevious">
+								<span class="glyphicon glyphicon-step-backward"></span>Previous
+							</button></li>
+						<li><button type="button"
+								class="btn btn-default btn-sm btnNext">
+								Next<span class="glyphicon glyphicon-step-forward"></span>
+							</button></li>
+					</ul>
+				</div>
+			</div>
+
+
+		</div>
+
+
+		<!-- Modal -->
+		<div id="myQABoardInsertForm" class="modal fade" role="dialog">
+			<div class="modal-dialog modal-lg">
+
+				<!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">교육 과정 및 교육원 관련 문의</h4>
+						<label>최대한 빠른 답변을 해드리겠습니다.</label>
+					</div>
+					<div class="modal-body">
+
+						<form role="form"
+							action="${pageContext.request.contextPath}/qaboard/insert"
+							method="post">
+							<div class="form-group">
+								<label for="name">제목:</label> <input type="text"
+									class="form-control" id="title" name="title"
+									placeholder="제목 (100자 이내)" maxlength="100" required="required"
+									autofocus="autofocus">
+							</div>
+							<div class="form-group">
+								<label for="comment">내용:</label>
+								<textarea class="form-control" rows="10" id="content"
+									name="content" placeholder="내용 (1000자 이내)" maxlength="1000"
+									required="required"></textarea>
+							</div>
+							<div class="checkbox">
+								<label><input type="checkbox" value="" id="undercover">비밀글
+									<span class="small">(비밀글을 체크하면 글내용 보기를 할 때 패스워드를 확인하는
+										게시물이 됩니다.)</span></label> <label class="text-danger small">* 수강 신청 확인
+									등 신원 확인이 필요한 문의는 이름, 전화번호, 이메일을 적어주시고, 비밀글 체크를 해주시기 바랍니다.</label>
+							</div>
+							<div class="form-group" id="pwForm" style="display: none;">
+								<input type="password" class="form-control " id="pw" name="pw"
+									placeholder="패스워드 (4자리)" maxlength="4" required="required"
+									disabled="disabled">
+							</div>
+							<button type="submit" class="btn btn-default btn-sm">Submit</button>
+						</form>
+
+
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default btn-sm"
+							data-dismiss="modal">Close</button>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<!-- Modal -->
+		<div id="myLoginFormModal" class="modal fade" role="dialog">
+
+			<div class="modal-dialog">
+
+				<!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header" style="padding: 35px 50px;">
+						<h4>
+							<span class="glyphicon glyphicon-lock"></span> 로그인
+						</h4>
+						<label>정상적인 서비스 사용을 위해서 로그인해야 합니다.</label>
+					</div>
+					<div class="modal-body" style="padding: 40px 50px;">
+						<form role="form" method="post"
+							action="${pageContext.request.contextPath}/login/login">
+							<div class="form-group">
+								<label for="id"> ID :</label> <input type="text"
+									class="form-control" id="id_" name="id_" placeholder="Enter ID"
+									required="required">
+							</div>
+							<div class="form-group">
+								<label for="pw"> Password :</label> <input type="password"
+									class="form-control" id="pw" name="pw"
+									placeholder="Enter Password" required="required">
+							</div>
+							<button type="submit" class="btn btn-default btn-block">
+								Login</button>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default btn-sm"
+							id="memberInsertForm">회원가입</button>
+						<button type="button" class="btn btn-default btn-sm"
+							data-dismiss="modal">Close</button>
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+
+	</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------
+//logoutform.jsp (화면설계 코드)
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<title>SIST_쌍용교육센터</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<script src="${pageContext.request.contextPath}/resources/script/util.js"></script>
+
+<script src="https://maps.googleapis.com/maps/api/js"></script>
+
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+
+<style>
+div#input:hover, div#output:hover {
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0
+		rgba(0, 0, 0, 0.19);
+}
+</style>
+</head>
+<body>
+	<div class="container">
+
+		<div class="modal-dialog">
+
+			<div>
+				<h1 style="font-size: x-large;">
+					<img src="${pageContext.request.contextPath}/resources/img/sist_logo.png" alt="logo"
+						style="vertical-align: bottom;"> SIST <small>v1.0</small>
+				</h1>
+			</div>
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header" style="padding: 35px 50px;">
+					<h4>
+						<span class="glyphicon glyphicon-lock"></span> 로그인
+					</h4>
+					<label>안전하게 로그아웃 되었습니다.</label>
+				</div>
+				<div class="modal-body" style="padding: 40px 50px;">
+					<div class="form-group"></div>
+					<a href="${pageContext.request.contextPath}/sist/main" class="btn btn-default btn-block">Main</a>
+				</div>
+				<div class="modal-footer"></div>
+			</div>
+
+		</div>
+
+	</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------
+//loginfail.jsp (화면설계 코드)
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<title>SIST_쌍용교육센터</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<script src="${pageContext.request.contextPath}/resources/script/util.js"></script>
+
+<script src="https://maps.googleapis.com/maps/api/js"></script>
+
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+
+<style>
+div#input:hover, div#output:hover {
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0
+		rgba(0, 0, 0, 0.19);
+}
+</style>
+</head>
+<body>
+	<div class="container">
+
+		<div class="modal-dialog">
+
+			<div>
+				<h1 style="font-size: x-large;">
+					<img src="${pageContext.request.contextPath}/resources/img/sist_logo.png" alt="logo"
+						style="vertical-align: bottom;"> SIST <small>v1.0</small>
+				</h1>
+			</div>
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header" style="padding: 35px 50px;">
+					<h4>
+						<span class="glyphicon glyphicon-lock"></span> 로그인
+					</h4>
+					<label>로그인에 실패했습니다.</label>
+				</div>
+				<div class="modal-body" style="padding: 40px 50px;">
+					<div class="form-group"></div>
+					<a href="${pageContext.request.contextPath}/sist/main" class="btn btn-default btn-block">Main</a>
+				</div>
+				<div class="modal-footer"></div>
+			</div>
+
+		</div>
+
+	</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------
+//adminmain.jsp (화면설계 코드)
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>SIST_쌍용교육센터</title>
+
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<script src="${pageContext.request.contextPath}/resources/script/util.js"></script>
+
+<script src="https://maps.googleapis.com/maps/api/js"></script>
+
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+
+<style>
+div#input:hover, div#output:hover {
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0
+		rgba(0, 0, 0, 0.19);
+}
+</style>
+<script>
+	$(document).ready(function() {
+
+
+	});
+</script>
+
+
+<script>
+	var position01 = new google.maps.LatLng(37.500197, 127.033471);
+	var position02 = new google.maps.LatLng(37.499362, 127.033202);
+
+	function myMap() {
+
+		//구글 맵 정보 설정
+		var mapProp = {
+			center : position01,
+			zoom : 17,
+			mapTypeId : google.maps.MapTypeId.ROADMAP
+		};
+		var map = new google.maps.Map(document.getElementById("googleMap"),
+				mapProp);
+
+		//마커 정보 설정
+		var marker = new google.maps.Marker({
+			position : position02,
+		});
+		marker.setMap(map);
+
+		//윈포윈도우 설정
+		var infowindow = new google.maps.InfoWindow(
+				{
+					content : "한독약품빌딩<br>서울특별시 강남구 역삼1동 735<br><img src=\"${pageContext.request.contextPath}/resources/img/handok_small.png\">"
+				});
+		google.maps.event.addListener(marker, 'click', function() {
+			infowindow.open(map, marker);
+		});
+
+	}
+</script>
+
+</head>
+<body>
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header" style="padding:10px;">
+				<a href="${pageContext.request.contextPath}/admin/main"><img src="${pageContext.request.contextPath}/resources/img/sist_logo.png" alt="sist_logo.png" style="vertical-align: bottom;"></a>
+			</div>
+			<div>
+				<ul class="nav navbar-nav">
+					<li class="active"><a href="${pageContext.request.contextPath}/admin/main">Home</a></li>
+					<li><a href="#">과정</a></li>
+					<li><a href="#">공지사항</a></li>
+					<li><a href="${pageContext.request.contextPath}/admin/qaboardlist">문의게시판</a></li>
+					<li><a href="#">회원</a></li>
+					<li><a href="#">상담</a></li>
+					<li><a href="#">성적</a></li>
+					<li><a href="#">교재</a></li>
+					<li><a href="${pageContext.request.contextPath}/login/logout">관리자 로그아웃</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container">
+		<div class="panel-group">
+			<div class="panel panel-primary" id="output">
+				<div class="panel-heading">
+					강남캠퍼스 02-3482-4632 서울특별시 강남구 테헤란로 132 (역삼동) 한독약품빌딩 8층
+					<button type="button" class="btn btn-default btn-xs btnMap"
+						id="map">Map</button>
+				</div>
+				<div class="panel-body">
+
+					<table class="table">
+						<thead>
+							<tr>
+								<th>번호</th>
+								<th>구분</th>
+								<th>과정명</th>
+								<th>교육기간</th>
+								<th>교육시간</th>
+								<th>교육비용</th>
+								<th>정원</th>
+								<th>과정신청/<br>상세보기
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>155</td>
+								<td>정부지원</td>
+								<td>웹프로그래머 취업 전문 과정<br> <span
+									class="text-danger small">(매월 316,000원 수당 지급)</span></td>
+								<td>2018.01.10~2018.05.24</td>
+								<td>09:00~18:00</td>
+								<td><span class="text-danger">전액 무료</span></td>
+								<td>25명</td>
+								<td><button type="button" class="btn btn-default btn-xs">상세보기</button></td>
+							</tr>
+							<tr>
+								<td>154</td>
+								<td>정부지원</td>
+								<td>사물인터넷 기술 구현 과정</td>
+								<td>2018.02.16~2018.04.13</td>
+								<td>09:00~18:00</td>
+								<td><span class="text-danger">전액 무료</span></td>
+								<td>25명</td>
+								<td><button type="button" class="btn btn-default btn-xs">상세보기</button></td>
+							</tr>
+							<tr>
+								<td>153</td>
+								<td>주말과정</td>
+								<td>개발자를 위한 Java Programming</td>
+								<td>2018.02.7, 14, 21, 28, 03.5</td>
+								<td>10:00~18:00</td>
+								<td>263,480원<br> <span class="text-danger small">(재직자
+										환급 210,784원)</span></td>
+								<td>20명</td>
+								<td><button type="button" class="btn btn-default btn-xs">상세보기</button></td>
+							</tr>
+							<tr>
+								<td>152</td>
+								<td>주말과정</td>
+								<td>빅데이터 설계 및 분석 과정</td>
+								<td>2018.03.7, 14, 21, 28, 04.5</td>
+								<td>10:00~18:00</td>
+								<td>230,090원<br> <span class="text-danger small">(재직자
+										환급 184,072원)</span></td>
+								<td>20명</td>
+								<td><button type="button" class="btn btn-default btn-xs">상세보기</button></td>
+							</tr>
+							<tr>
+								<td>151</td>
+								<td>주말과정</td>
+								<td>실무 중심의 Oracle SQL &amp; PL/SQL</td>
+								<td>2018.03.7, 14, 21, 28, 04.5</td>
+								<td>10:00~18:00</td>
+								<td>263,480원<br> <span class="text-danger small">(재직자
+										환급 210,784원)</span></td>
+								<td>20명</td>
+								<td><button type="button" class="btn btn-default btn-xs">상세보기</button></td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+			</div>
+
+			<div class="panel panel-default" id="output">
+				<div class="panel-heading">공지사항</div>
+				<div class="panel-body">
+
+					<table class="table">
+						<thead>
+							<tr>
+								<th>번호</th>
+								<th style="width: 70%;">제목</th>
+								<th>작성일</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>114</td>
+								<td><a href="#demo137" data-toggle="collapse">Framework를
+										활용한 빅데이터 개발자 과정 수료 안내</a>
+									<div id="demo137" class="collapse"
+										style="width: 80%; margin: 10px;">
+										<p>
+											당 교육센터에서는 Framwork를 활용한 빅데이터 개발자 과정이 수료함 알려드립니다.<br>
+											교육장소 : 강남교육센터<br> 교육일정 : 2017.06.3~2017.12.03 매주
+											월~금(09:00~18:00)<br>
+										</p>
+									</div></td>
+								<td>2017-11-03</td>
+							</tr>
+							<tr>
+								<td>113</td>
+								<td><a href="#demo136" data-toggle="collapse">2018년
+										정부지원 무료 교육 안내</a>
+									<div id="demo136" class="collapse"
+										style="width: 80%; margin: 10px;">
+										<p>
+											당 교육센터에서는 고용노동부와 한국산업인력공단 주관으로 국가기간전략산업직종훈련 교육생을 아래와 같이
+											모집합니다.<br> 교육장소 : 강남교육센터 , 강북교육센터<br> 교육일정 : 총
+											5.5~6개월 매주 월~금(09:00~18:00)<br> 교육대상 : 미취업자 /
+											졸업예정자(2018년 2월 졸업예정자)<br> 교육비용 :국비전액지원(교육비 및 교재비 전액지원)<br>
+											훈련수당 : 월 236,000원~316,000원 지급
+										</p>
+
+									</div></td>
+								<td>2017-10-30</td>
+							</tr>
+						</tbody>
+					</table>
+					<ul class="pager">
+						<li><button type="button" class="btn btn-default btn-sm">Previous</button></li>
+						<li><button type="button" class="btn btn-default btn-sm">Next</button></li>
+					</ul>
+
+				</div>
+			</div>
+
+
+		</div>
+
+
+		<!-- Google Map Modal -->
+		<div id="mapModal" class="modal fade" role="dialog">
+			<div class="modal-dialog">
+
+				<!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Google Map</h4>
+					</div>
+					<div class="modal-body">
+
+						<div id="googleMap"
+							style="width: 550px; height: 380px; margin: auto;"></div>
+
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default btn-sm"
+							data-dismiss="modal">Close</button>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<!-- Modal -->
+		<div id="myLoginFormModal" class="modal fade" role="dialog">
+
+			<div class="modal-dialog">
+
+				<!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header" style="padding: 35px 50px;">
+						<h4>
+							<span class="glyphicon glyphicon-lock"></span> 로그인
+						</h4>
+						<label>정상적인 서비스 사용을 위해서 로그인해야 합니다.</label>
+					</div>
+					<div class="modal-body" style="padding: 40px 50px;">
+						<form role="form" method="post" action="${pageContext.request.contextPath}/login/login">
+							<div class="form-group">
+								<label for="id"> ID :</label> <input type="text"
+									class="form-control" id="id_" name="id_" placeholder="Enter ID"
+									required="required">
+							</div>
+							<div class="form-group">
+								<label for="pw"> Password :</label> <input type="password"
+									class="form-control" id="pw" name="pw"
+									placeholder="Enter Password" required="required">
+							</div>
+							<button type="submit" class="btn btn-default btn-block">
+								Login</button>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default btn-sm"
+							id="memberInsertForm">회원가입</button>
+						<button type="button" class="btn btn-default btn-sm"
+							data-dismiss="modal">Close</button>
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+
+	</div>
+
+	<footer class="container-fluid bg-4 text-center">
+		<p>
+		www.sist.co.kr 쌍용교육센터 since 1985
+		</p>
+	</footer>
+	
+</body>
+</html>
+
+
+
+
+
+//adminqaboardlist.jsp
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>SIST_쌍용교육센터</title>
+
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<script
+	src="${pageContext.request.contextPath}/resources/script/util.js"></script>
+
+<script src="https://maps.googleapis.com/maps/api/js"></script>
+
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+
+<style>
+div#input:hover, div#output:hover {
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0
+		rgba(0, 0, 0, 0.19);
+}
+</style>
+
+<script>
+	$(document).ready(function() {
+
+	});
+</script>
+</head>
+<body>
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header" style="padding: 10px;">
+				<a href="${pageContext.request.contextPath}/admin/main"><img
+					src="${pageContext.request.contextPath}/resources/img/sist_logo.png"
+					alt="sist_logo.png" style="vertical-align: bottom;"></a>
+			</div>
+			<div>
+				<ul class="nav navbar-nav">
+					<li><a href="${pageContext.request.contextPath}/admin/main">Home</a></li>
+					<li><a href="#">과정</a></li>
+					<li><a href="#">공지사항</a></li>
+					<li class="active"><a
+						href="${pageContext.request.contextPath}/admin/qaboardlist">문의게시판</a></li>
+					<li><a href="#">회원</a></li>
+					<li><a href="#">상담</a></li>
+					<li><a href="#">성적</a></li>
+					<li><a href="#">교재</a></li>
+
+					<%-- EL 표현을 이용해서 세션객체에 저장된 정보를 확인할 수 있다 --%>
+					<li><a href="${pageContext.request.contextPath}/login/logout">관리자(${sessionScope.logininfo.id_})
+							로그아웃</a></li>
+
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container">
+		<div class="panel-group">
+
+			<div class="panel panel-default" id="output">
+				<div class="panel-heading">
+					교육 과정 및 교육원 관련 문의
+					<button type="button" class="btn btn-default btn-xs"
+						id="QABoardInsert" data-toggle="tooltip" data-placement="top"
+						title="로그인 과정 없이 글쓰기가 가능합니다." disabled="disabled">글쓰기</button>
+				</div>
+				<div class="panel-body">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>번호</th>
+								<th class="col-md-8">제목</th>
+								<th>작성일</th>
+								<th>답변보기</th>
+								<th>답변쓰기</th>
+								<th>블라인드</th>
+							</tr>
+						</thead>
+						<tbody>
+
+							<tr>
+								<td>1</td>
+								<td><a href="#demo1" data-toggle="collapse">제목</a>
+									<div id="demo1" class="collapse"
+										style="width: 80%; margin: 10px;">
+
+										<p>아이피주소</p>
+										<p>글내용</p>
+
+									</div></td>
+								<td>글쓴날짜</td>
+								<td><button type="button"
+										class="btn btn-default btn-xs btnReply">답변보기</button></td>
+								<td><button type="button"
+										class="btn btn-default btn-xs btnReplyAdd">답변쓰기</button></td>
+								<td><input type="checkbox" class="blindCB"></td>
+							</tr>
+
+						</tbody>
+					</table>
+					<div>
+						<button type="button" class="btn btn-default btn-sm btnPicture">
+							Total <span class="badge totalCount">1</span>
+						</button>
+						<button type="button" class="btn btn-default btn-sm btnPicture">
+							Count <span class="badge totalCount">1</span>
+						</button>
+						<button type="button" class="btn btn-default btn-sm btnPicture">
+							Blind <span class="badge blindCount">0</span>
+						</button>
+						<button type="button" class="btn btn-default btn-sm btnTotalPages">
+							Pages <span class="badge totalPages">1</span>
+						</button>
+						<button type="button"
+							class="btn btn-default btn-sm btnCurrentPage">
+							Page <span class="badge currentPage">1</span>
+						</button>
+						<button type="button" class="btn btn-default btn-sm btnPrevious">
+							<span class="glyphicon glyphicon-step-backward"></span>Previous
+						</button>
+						<button type="button" class="btn btn-default btn-sm btnNext">
+							Next<span class="glyphicon glyphicon-step-forward"></span>
+						</button>
+					</div>
+				</div>
+			</div>
+
+
+		</div>
+
+
+		<!-- Modal -->
+		<div id="replyQABoardInsertForm" class="modal fade" role="dialog">
+			<div class="modal-dialog modal-lg">
+
+				<!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">교육 과정 및 교육원 관련 문의에 대한 답변</h4>
+					</div>
+					<div class="modal-body">
+
+						<div class="form-group">
+							<label for="content">제목:</label> <input type="text"
+								class="form-control" id="replytitle" name="replytitle"
+								disabled="disabled" value="제목">
+						</div>
+						<div class="form-group">
+							<label for="content">내용:</label>
+							<textarea class="form-control" rows="10" id="replycontent"
+								name="replycontent" disabled="disabled">글내용</textarea>
+						</div>
+						<form role="form"
+							action="${pageContext.request.contextPath}/admin/replyinsert"
+							method="post">
+							<input type="hidden" id="qid" name="qid" value="">
+							<div class="form-group">
+								<label for="content">답변내용:</label>
+								<textarea class="form-control" rows="10" id="content"
+									name="content" placeholder="내용 (1000자 이내)" maxlength="1000"
+									required="required"></textarea>
+							</div>
+							<button type="submit" class="btn btn-default btn-sm">Submit</button>
+						</form>
+
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default btn-sm"
+							data-dismiss="modal">Close</button>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+
+	</div>
+
+	<footer class="container-fluid bg-4 text-center">
+		<p>www.sist.co.kr 쌍용교육센터 since 1985</p>
+	</footer>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------
+
+

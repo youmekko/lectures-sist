@@ -1,0 +1,197 @@
+주의)
+메모장에 문제 복사한 후 풀이 작성하고 제출.
+제출시 '본인이름_20171201.txt' 파일로 만들고, 첨부 파일로 제출.
+제출은 각 팀별 파일서버 '자가진단평가' 폴더에 저장.
+
+
+
+---------------------------------
+문제1) 아래 화면 설계를 토대로 프로그램을 구현합니다. Score.java, ScoreDAO.java, ScoreService.java, Main.java
+
+
+
+-------------------------------------------------------
+1. 성적 정보 입력  2. 성적 정보 출력
+선택(1~2, 0 quit)?1
+--------------
+성적 정보 입력
+--------------
+번호:001
+이름:hong
+과목1:80
+과목2:90
+과목3:90
+성적 정보 입력이 성공했습니다.
+-------------------------------------------------------
+1. 성적 정보 입력  2. 성적 정보 출력
+선택(1~2, 0 quit)?1
+--------------
+성적 정보 입력
+--------------
+번호:002
+이름:park
+과목1:100
+과목2:100
+과목3:90
+성적 정보 입력이 성공했습니다.
+-------------------------------------------------------
+1. 성적 정보 입력  2. 성적 정보 출력
+선택(1~2, 0 quit)?2
+--------------
+성적 정보 출력
+--------------
+총 : 2건
+---------------------------------------
+번호  이름  과목1 과목2 과목3 총점 평균
+---------------------------------------
+001   hong     80    90    90   260  86.7
+002   park    100   100    90   290  96.7
+
+-------------------------------------------------------
+1. 성적 정보 입력  2. 성적 정보 출력
+선택(1~2, 0 quit)?0
+프로그램 종료.
+
+
+
+
+
+//------------------------------------
+package com.score001;
+
+//자료형 클래스
+public class Score {
+	
+	//필드 구성
+	private String sid, name;
+	private int sub1, sub2, sub3, tot;
+	private double avg;
+	
+	//생성자
+	public Score() {
+	}
+	public Score(String sid, String name, int sub1, int sub2, int sub3) {
+		this.sid = sid;
+		this.name = name;
+		this.sub1 = sub1;
+		this.sub2 = sub2;
+		this.sub3 = sub3;
+	}
+	
+	//getter, setter 구성
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public int getSub1() {
+		return sub1;
+	}
+	public void setSub1(int sub1) {
+		this.sub1 = sub1;
+	}
+	public int getSub2() {
+		return sub2;
+	}
+	public void setSub2(int sub2) {
+		this.sub2 = sub2;
+	}
+	public int getSub3() {
+		return sub3;
+	}
+	public void setSub3(int sub3) {
+		this.sub3 = sub3;
+	}
+	public String getSid() {
+		return sid;
+	}
+	
+	//총점 계산용 메소드
+	public int getTot() {
+		return this.sub1 + this.sub2 + this.sub3;
+	}
+	
+	//평균 계산용 메소드
+	public double getAvg() {
+		return this.getTot() / 3.0;
+	}
+
+	//성적 정보 출력용 메소드
+	public String scoreInfo() {
+		return String.format("%-5s %-5s %5d %5d %5d %5d %5.1f"
+				, this.sid, this.name, this.sub1, this.sub2, this.sub3
+				, this.getTot(), this.getAvg());
+	}
+
+}
+
+
+
+
+
+
+//------------------------------------------------------------
+package com.score001;
+
+//(배열)저장소 관리 클래스
+public class ScoreDAO {
+	
+	//(배열)저장소 생성 및 관리
+	//(배열)저장소 인덱스 관리 변수
+
+	 
+	//성적 정보 입력 메소드
+
+	
+	//성적 정보 출력 메소드
+
+}
+
+
+
+
+
+//-----------------------------------------------------------
+package com.score001;
+
+import java.util.*;
+
+//(콘솔)서비스 관련 클래스
+public class ScoreService {
+	
+	//(배열)저장소 관련 클래스 객체 확보
+
+
+	//성적 정보 입력 메소드
+
+
+	//성적 정보 출력 메소드
+
+}
+
+
+
+
+
+//--------------------------------------------------
+package com.score001;
+
+import java.util.*;
+
+//메인 메뉴 액션 클래스
+public class Main {
+
+	public static void main(String[] args) {
+
+		Scanner sc = new Scanner(System.in);
+		
+		//메뉴 액션 구성
+
+
+		sc.close();
+		System.out.println("프로그램 종료.");
+		
+	}
+
+}

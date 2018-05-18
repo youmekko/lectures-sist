@@ -1,0 +1,21 @@
+{
+	"members": {
+		"member": [{
+				"-mid_": "M001",
+				"name_": "Hong",
+				"phone": "010-1234-1234",
+				"email": "hong@naver.com",
+				"regDate": "2018-03-15",
+				"deptName": "개발부"
+			},
+			{
+				"-mid_": "M002",
+				"name_": "Park",
+				"phone": "010-5678-8901",
+				"email": "park@test.com",
+				"regDate": "2018-03-20",
+				"deptName": "개발부"
+			}
+		]
+	}
+}

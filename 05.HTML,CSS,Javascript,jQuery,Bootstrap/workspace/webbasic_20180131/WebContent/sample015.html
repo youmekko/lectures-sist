@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+
+<!-- 
+
+HTML Links (Inline)
+
+In HTML, links are defined with the <a> tag:
+The href attribute specifies the destination address (https://www.w3schools.com/html/) of the link.
+
+예를 들어, <a href="http://www.naver.com">네이버 바로가기</a>
+
+주의) 주소 지정시 상대 주소, 절대 주소 표기법을 사용한다.
+주의) 링크가 걸린 콘텐츠에 마우스 커서를 오버하면 커서 모양이 little hand가 된다. 
+주의) 링크가 걸린 콘텐츠는 <a> 태그 자체 스타일이 적용된다.
+An unvisited link is underlined and blue
+A visited link is underlined and purple
+An active link is underlined and red
+
+ -->
+
+<!-- 특정 주소를 URL 표기법(http://..., https://)으로 표기한 경우 --> 
+<a href="http://www.naver.com">네이버 바로가기(O)</a>
+
+<!-- 특정 주소를 상대 주소(서버 로컬 주소)로 표기한 경우 --> 
+<a href="www.naver.com">네이버 바로가기(X)</a>
+
+<!-- 특정 주소 연결시 새 페이지(탭)으로 연결하기 -->
+<a href="https://www.w3schools.com/" target="_blank">Visit W3Schools!</a>
+
+
+<!-- 이미지에 링크 걸기 (상대 주소 사용) -->
+<a href="https://www.w3schools.com"><img src="sampleImages/Tulips_small.jpg" style="border:0;"></a>
+
+
+<!-- 이미지에 링크 걸기 (절대 주소 사용) -->
+<a href="https://www.w3schools.com"><img src="http://211.63.89.68:8090/resources/images/Tulips_small.jpg" style="border:0;"></a>
+
+
+
+</body>
+</html>

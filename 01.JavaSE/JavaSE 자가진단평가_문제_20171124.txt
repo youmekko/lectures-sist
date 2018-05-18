@@ -1,0 +1,199 @@
+주의)
+메모장에 문제 복사한 후 풀이 작성하고 제출.
+제출시 '본인이름_20171124.txt' 파일로 만들고, 첨부 파일로 제출.
+제출은 각 팀별 파일서버 '자가진단평가' 폴더에 저장.
+
+
+
+---------------------------------
+문제1) 객체지향프로그래밍에서 객체(Object)의 의미를 설명.
+
+
+
+
+
+
+---------------------------------
+문제2) '보드마카'를 클래스로 정의한 예제 코드 작성. 클래스명은 BoardMarker로 작성하고, state, behavior 분석 결과를 클래스로 표현.
+
+package com.test;
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+		//BoardMarker 객체 생성
+		BoardMarker m1 = new BoardMarker("black");
+		
+		//가상의 칠판(콘솔)에 보드마카 객체를 이용해서 글쓰기 행위를 한다.
+		m1.writing("Hello, World!");
+		
+	}
+
+}
+
+
+
+
+
+---------------------------------
+문제3) 클래스 선언시 field 정의, 선언 형식 및 역할, 특징 설명 및 예시코드 작성.
+package com.test;
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+		//Car 클래스에 대한 객체 생성
+		Car myCar = new Car();
+		
+		//Car 객체의 멤버(필드) 접근 및 값 출력 -> dot(.) 연산자
+		System.out.println(myCar.company);
+		System.out.println(myCar.model);
+		
+	}
+
+}
+
+
+
+
+
+
+---------------------------------
+문제4) 클래스 선언시 method 정의, 선언 형식 및 역할, 특징 설명 및 예시코드 작성.
+package com.test;
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+		//Calculator 클래스에 대한 객체 생성
+		Calculator c = new Calculator();
+		
+		//Calculator 객체의 plus() 메소드 호출 테스트
+		int x = 10;
+		int y = 20;
+		int result = c.plus(x, y);
+		System.out.println(result); //30
+
+	}
+
+}
+
+
+
+
+
+
+---------------------------------
+문제5) 메소드 매개변수 선언시 기본형 자료형(by value)과 참조형 자료형(by reference) 매개변수의 차이 설명 및 예시코드 작성.
+package com.test;
+
+import java.util.Arrays;
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+		//by value, by reference 테스트
+		Sample s = new Sample();
+		
+		//by value
+		int a = 10;
+		s.method1(a);
+		System.out.printf("outer:%d%n",a);
+		
+		//by reference
+		int[] arr = {10};
+		s.method2(arr);
+		System.out.printf("outer:%d%n",arr[0]);
+
+	}
+
+}
+
+
+
+
+
+
+
+---------------------------------
+문제6) 메소드 오버로딩(overloading)의 정의, 특징 설명 및 예시코드 작성.
+package com.test;
+
+public class Main {
+
+	public static void main(String[] args) {
+
+		//메소드 오버로딩 테스트
+		
+		//객체 생성
+		Sample s = new Sample();
+		
+		//오버로딩 메소드 호출 
+		System.out.println(s.add(10, 20));
+		System.out.println(s.add("TEST", "HELLO"));
+		
+	}
+
+}
+
+
+
+
+
+
+---------------------------------
+문제7) 개인정보(이름, 전화번호, 이메일)를 클래스(Member)로 표현하고, 여러명의 개인 정보 객체를 (배열)저장소에 저장하고, 출력하는 코드 작성. Member클래스와 Main 클래스 별도 작성.
+
+출력예)
+----------
+회원 명단
+----------
+홍길동        1234       hong@naver.com
+박길동        5678       park@naver.com
+
+
+package com.test;
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+		//객체 저장소 준비
+		Member[] m = new Member[5];
+		
+		
+		//홍길동 정보 저장용 Member 클래스 객체(instance) 생성
+		Member m1 = new Member();
+		m1.setName("홍길동");
+		m1.setPhone("1234");
+		m1.setEmail("hong@naver.com");
+		
+		//박길동 정보 저장용 Member 클래스 객체(instance) 생성
+		Member m2 = new Member();
+		m2.setName("박길동");
+		m2.setPhone("5678");
+		m2.setEmail("park@naver.com");
+		
+		//Member 객체들을 배열에 저장
+		m[0] = m1;
+		m[1] = m2;
+
+		System.out.println("----------");
+		System.out.println("회원 명단");
+		System.out.println("----------");
+		for (Member temp : m) {
+			if (temp == null) continue;
+			System.out.println(temp.memberInfo());
+		}
+		
+	}
+
+}
+
+
+
+

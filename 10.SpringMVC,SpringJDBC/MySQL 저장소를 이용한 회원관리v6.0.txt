@@ -1,0 +1,86 @@
+--------------------------------
+회원관리 v6.0 (SpringMVC + SpringJDBC 버전)
+
+1. 요구분석
+- 자료 저장소로 MySQL 데이터베이스 이용
+- 회원 정보 입력(중복 검사), 회원 정보 출력, 회원 정보 검색, 회원 정보 삭제, 회원 정보 수정 액션 구현
+- 화면 설계를 토대로 항목 결정->  회원번호, 이름, 전화번호, 이메일, 등록일(yyyy-MM-dd), 부서번호, 부서명 ->자료형 클래스
+- 부서 정보는 개발부(B01), 마케팅부(B02), 총무부(B03)만 존재한다고 가정.
+- 회원 정보 검색은 이름 기준, 전화번호 기준, ... => 서브 메뉴, 부분 검색
+
+
+2. 화면설계
+- 이미지 참조
+
+
+3. 데이터베이스 준비
+
+CREATE TABLE 'dept' (
+  'deptId' varchar(3) NOT NULL,
+  'deptName' varchar(20) NOT NULL,
+  PRIMARY KEY ('deptId')
+);
+
+INSERT INTO dept (deptId, deptName)
+VALUES
+('B01',
+'개발부');
+INSERT INTO dept (deptId, deptName)
+VALUES
+('B02',
+'마케팅부');
+INSERT INTO dept (deptId, deptName)
+VALUES
+('B03',
+'총무부');
+INSERT INTO dept (deptId, deptName) VALUES ('B04','회계부');  
+COMMIT;
+
+CREATE TABLE 'members' (
+  'mid_' varchar(3) NOT NULL,
+  'name_' varchar(20) NOT NULL,
+  'phone' varchar(20) NOT NULL,
+  'email' varchar(50) DEFAULT NULL,
+  'regDate' date DEFAULT NULL,
+  'deptId' varchar(3) DEFAULT NULL,
+  PRIMARY KEY ('mid_'),
+  KEY 'members_deptId_fk' ('deptId'),
+  CONSTRAINT 'members_deptId_fk' FOREIGN KEY ('deptId') REFERENCES 'dept' ('deptId')
+);
+
+
+CREATE VIEW membersView
+AS
+SELECT mid_, name_, phone, email, regDate, deptName 
+	FROM members INNER JOIN dept 
+    USING(deptID) 
+    ORDER BY mid_;
+    
+
+
+SELECT mid_, name_, phone, email, regDate, deptName 
+		FROM membersView;
+
+SELECT deptId, deptName FROM dept ORDER BY deptId;
+
+
+SELECT COUNT(*) AS totalCount FROM membersView;
+
+DELETE FROM members WHERE mid_='M01';
+
+UPDATE members SET name_ = ?, phone = ?, email = ?, regDate = ?, deptId = ? WHERE mid_ = ?
+
+
+4. 작성 순서
+1) 요구분석 결과에 따른 화면설계(MockUp, 웹디자인)
+2) 데이터베이스에서 테이블 및 초기 자료 준비
+3) 화면설계에 따른 쿼리 준비 -> INSERT, SELECT
+4) 자료형 클래스 선언
+5) DAO 클래스 선언 및 저장소 준비, 초기 자료 준비
+6) DAO 클래스 전체 출력 메소드 작성
+7) Test 클래스에서 전체 출력 메소드 테스트
+8) 화면 설계에 따른 액션 클래스 작성
+9) 전체 출력 메소드 연결
+10) 입력 기능 추가
+
+----------------------------------------
